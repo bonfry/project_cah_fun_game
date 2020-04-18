@@ -1,0 +1,10 @@
+{
+  "card_sets": [
+    {
+      "name": "Project CAH42 ITA Standard Edition",
+      "code": "std",
+      "black_cards_file": "standard_bc.txt",
+      "white_cards_file": "standard_wc.txt"
+    }
+  ]
+}

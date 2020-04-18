@@ -4,7 +4,7 @@ A dart full-stack application for playing cards against humanity (ITA) on web
   
 ## Getting Started  
   
-This project is ready to play only on a desktop or tablet. For building the application we must install [last Flutter SDK](https://flutter.dev/docs/get-started/install) (from **beta or master branch**) and last [Dart realese]([https://dart.dev/get-dart](https://dart.dev/get-dart)) and then we can start to build the application:
+This project is ready to play only on a desktop or tablet. For building the application we must install [last Flutter SDK](https://flutter.dev/docs/get-started/install) (from **beta or master branch**) and last [Dart release]([https://dart.dev/get-dart](https://dart.dev/get-dart)) and then we can start to build the application:
 
 Before starting, you should create a directory (for example *cah_game*) where you put the flutter web application and the game server.
 

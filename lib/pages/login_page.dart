@@ -12,7 +12,6 @@ class LoginPage extends StatefulWidget {
   _LoginPageState createState() => _LoginPageState();
 }
 
-//TODO: cambio bottone in base a crea istanza / partecipa istanza
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   bool canIJoinToSession = false;
@@ -25,7 +24,6 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
 
     GameSessionManager.onUpdate((session) {

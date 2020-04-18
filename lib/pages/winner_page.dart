@@ -15,7 +15,7 @@ class WinnerPageState extends State<WinnerPage> {
   void initState() {
     super.initState();
 
-    var howl = Howl(src: ['http://bonfrycah.ddns.net:4040/audio/win.mp3']);
+    var howl = Howl(src: ['/assets/audio/win.mp3']);
     Future.delayed(Duration(seconds: 1)).then((value) {
       howl.play();
     });

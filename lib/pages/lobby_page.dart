@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:projectcahfungame/game_session_manager.dart';
 import 'package:projectcahfungame/models/enums/game_session_phase.dart';
 import 'package:projectcahfungame/models/game_session.dart';
@@ -14,7 +15,6 @@ class LobbyPage extends StatefulWidget {
 
 class LobbyPageState extends State<LobbyPage> {
   GameSession gameSession;
-
   @override
   void initState() {
     super.initState();
@@ -38,11 +38,13 @@ class LobbyPageState extends State<LobbyPage> {
   @override
   Widget build(BuildContext context) {
     var userNameList = gameSession.playersDetailMap.keys.toList();
+    GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
     return FutureBuilder<String>(
       future: SessionData.getUser().then((user) => user.username),
       builder: (BuildContext context, AsyncSnapshot<String> snap) {
         return Scaffold(
+          key: scaffoldKey,
           body: Column(
             children: <Widget>[
               Padding(
@@ -69,19 +71,32 @@ class LobbyPageState extends State<LobbyPage> {
                             Center(
                               child: Padding(
                                 padding: EdgeInsets.all(10),
-                                child: Container(
-                                  padding: EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                      borderRadius:
-                                          BorderRadius.all(Radius.circular(8)),
-                                      border:
-                                          Border.all(color: Color(0xffdddddd))),
-                                  child: SelectableText(
-                                    gameSession.id,
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w500),
+                                child: GestureDetector(
+                                  child: Container(
+                                    padding: EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(8)),
+                                        border: Border.all(
+                                            color: Color(0xffdddddd))),
+                                    child: Text(
+                                      gameSession.id,
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w500),
+                                    ),
                                   ),
+                                  onTap: () {
+                                    Clipboard.setData(
+                                            ClipboardData(text: gameSession.id))
+                                        .then((value) {
+                                      scaffoldKey.currentState
+                                          .showSnackBar(SnackBar(
+                                        content:
+                                            Text('Codice sessione copiato'),
+                                      ));
+                                    });
+                                  },
                                 ),
                               ),
                             ),

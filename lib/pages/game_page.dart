@@ -242,7 +242,8 @@ class GamePageState extends State<GamePage> {
     }).toList();
 
     while (players.isNotEmpty) {
-      var randomPlayerIndex = randomGenerator.nextInt(players.length - 1);
+      var randomPlayerIndex =
+          players.length > 1 ? randomGenerator.nextInt(players.length - 1) : 0;
       var playerName = players.removeAt(randomPlayerIndex);
 
       var cardsForCompile =

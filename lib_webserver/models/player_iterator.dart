@@ -1,25 +1,29 @@
 import 'dart:math';
 
-class PlayersIterator{
+class PlayersIterator {
   LinkedNode<String> _currentPlayerNode;
   LinkedCircularList<String> _listToIterate;
 
-  PlayersIterator(Iterable<String> players){
+  PlayersIterator(Iterable<String> players) {
     _listToIterate = LinkedCircularList<String>(players);
-
   }
 
-  bool moveNext(){
-    if(_currentPlayerNode != null && _currentPlayerNode.hasNext){
+  bool moveNext() {
+    if (_currentPlayerNode != null && _currentPlayerNode.hasNext) {
       _currentPlayerNode = _currentPlayerNode.getNext();
       return true;
-    }  else{
+    } else {
       return false;
     }
   }
 
-  bool moveNextRandom(){
+  bool moveNextRandom() {
     var randomGenerator = Random();
+
+    if (length == 1) {
+      _currentPlayerNode = _listToIterate.head;
+      return true;
+    }
 
     var playerIndex = randomGenerator.nextInt(_listToIterate.length - 1);
     _currentPlayerNode = _listToIterate._getNode(playerIndex);
@@ -28,40 +32,38 @@ class PlayersIterator{
   }
 
   void addPlayer(String player) =>
-    _listToIterate.addItem(LinkedNode<String>(player));
+      _listToIterate.addItem(LinkedNode<String>(player));
 
-  String removePlayer(String player) =>
-    _listToIterate.removePlayer(player);
+  String removePlayer(String player) => _listToIterate.removePlayer(player);
 
-  int get length{
+  int get length {
     return _listToIterate.length;
   }
 
-  String get currentPlayer{
+  String get currentPlayer {
     return _currentPlayerNode.value;
   }
 }
 
-class LinkedCircularList<T>{
+class LinkedCircularList<T> {
   LinkedNode<T> head;
   LinkedNode<T> tail;
   int length;
 
-  LinkedCircularList(Iterable<T> players):length = 0{
-    for(var player in players){
+  LinkedCircularList(Iterable<T> players) : length = 0 {
+    for (var player in players) {
       addItem(LinkedNode<T>(player));
     }
   }
 
   T currentPlayer;
 
-  T removePlayer(T player){
-
+  T removePlayer(T player) {
     T itemRemoved;
 
-    if(length == 0){
+    if (length == 0) {
       throw Exception('No player exists');
-    }else if(length == 1 && head.value == player){
+    } else if (length == 1 && head.value == player) {
       itemRemoved = head.value;
 
       head = null;
@@ -73,13 +75,12 @@ class LinkedCircularList<T>{
     LinkedNode<T> prevNode;
     var currentNode = head;
 
-    while(currentNode.hasNext){
+    while (currentNode.hasNext) {
       prevNode = currentNode;
       currentNode = currentNode.getNext();
 
-      if(currentNode.value == player){
-
-        if(currentNode == tail){
+      if (currentNode.value == player) {
+        if (currentNode == tail) {
           tail = prevNode;
         }
 
@@ -94,10 +95,10 @@ class LinkedCircularList<T>{
     throw Exception('Player not found');
   }
 
-  LinkedNode<T> _getNode(int index){
+  LinkedNode<T> _getNode(int index) {
     var node = head;
 
-    for(var i = 1; i < length; i++){
+    for (var i = 1; i < length; i++) {
       node = node.getNext();
     }
 
@@ -109,10 +110,10 @@ class LinkedCircularList<T>{
     return nodeFound?.value;
   }
 
-  void addItem(LinkedNode<T> item){
-    if(head == null){
+  void addItem(LinkedNode<T> item) {
+    if (head == null) {
       head = item;
-    }else{
+    } else {
       tail._next = item;
     }
 
@@ -120,25 +121,23 @@ class LinkedCircularList<T>{
     item._next = head;
     length++;
   }
-
 }
 
-class LinkedNode<T>{
+class LinkedNode<T> {
   T value;
   LinkedNode _next;
 
-  LinkedNode(this.value,{LinkedNode<T> next}):
-  _next = next;
+  LinkedNode(this.value, {LinkedNode<T> next}) : _next = next;
 
-   set next (LinkedNode<T> nextNode){
-     _next = nextNode;
+  set next(LinkedNode<T> nextNode) {
+    _next = nextNode;
   }
 
-  LinkedNode<T> getNext(){
-     return _next;
+  LinkedNode<T> getNext() {
+    return _next;
   }
 
-  bool get hasNext{
-     return _next != null;
+  bool get hasNext {
+    return _next != null;
   }
 }

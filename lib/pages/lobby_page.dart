@@ -21,7 +21,8 @@ class LobbyPageState extends State<LobbyPage> {
     gameSession = GameSessionManager.currentGameSession;
 
     GameSessionManager.onUpdate((GameSession session) {
-      if (session.gamePhase == GameSessionPhase.LOBBY) {
+      if (session.gamePhase == GameSessionPhase.LOBBY ||
+          session.gamePhase == GameSessionPhase.FINISH_GAME) {
         setState(() {
           gameSession = session;
         });

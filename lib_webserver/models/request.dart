@@ -1,27 +1,24 @@
 import 'dart:convert';
 import 'dart:io';
 
-class Request{
+class Request {
   final String requestName;
-  final Map<String,dynamic> params;
+  final Map<String, dynamic> params;
   final WebSocket wsConnection;
 
   Request(this.requestName, this.params, {this.wsConnection});
 
-  static Request parseJson(Map<String,dynamic> data, WebSocket socket){
+  static Request parseJson(Map<String, dynamic> data, {WebSocket socket}) {
     String requestName = data['request_name'];
-    Map<String,dynamic> params = data['params'];
+    Map<String, dynamic> params = data['params'];
 
-    var request = Request(requestName,params,wsConnection: socket);
+    var request = Request(requestName, params, wsConnection: socket);
 
     return request;
   }
 
-  Map<String,dynamic> toMap(){
-    return {
-      'request_name' : requestName,
-      'params': params
-    };
+  Map<String, dynamic> toMap() {
+    return {'request_name': requestName, 'params': params};
   }
 
   @override
@@ -30,7 +27,7 @@ class Request{
   }
 }
 
-class RequestName{
+class RequestName {
   static const String SIGN_IN_REQUEST = 'signIn';
   static const String INIT_GAME_REQUEST = 'initGame';
   static const String SEND_WHITE_CARDS_REQUEST = 'sendWhiteCards';

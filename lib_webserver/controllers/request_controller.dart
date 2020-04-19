@@ -10,7 +10,7 @@ import 'session_join_controller.dart';
 class RequestController {
   static void parseRequest(String requestString, WebSocket socket) {
     Map<String, dynamic> requestJsonMap = JsonDecoder().convert(requestString);
-    var request = Request.parseJson(requestJsonMap, socket);
+    var request = Request.parseJson(requestJsonMap, socket: socket);
 
     GameSession gameSessionToBroadcast;
 

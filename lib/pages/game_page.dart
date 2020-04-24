@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:projectcahfungame/game_session_manager.dart';
 import 'package:projectcahfungame/models/card.dart';
 import 'package:projectcahfungame/models/enums/game_session_phase.dart';
@@ -9,8 +11,6 @@ import 'package:projectcahfungame/pages/winner_page.dart';
 import 'package:projectcahfungame/widgets/game_card.dart';
 import 'package:projectcahfungame/widgets/leaderboard.dart';
 import 'package:projectcahfungame/widgets/white_card_deck.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 
 import '../main.dart';
 import '../session_data.dart';
@@ -28,7 +28,7 @@ class GamePageState extends State<GamePage> {
   List<WhiteCard> whiteCards = [];
   int _maxWhiteCardsSelected;
   GameSession gameSession;
-
+  String currentUserInApplication = '';
   GamePageState();
 
   @override
@@ -41,6 +41,7 @@ class GamePageState extends State<GamePage> {
     blackCardChoose = gameSession.currentBlackCard;
 
     SessionData.getUser().then((user) {
+      currentUserInApplication = user.username;
       setState(() {
         _maxWhiteCardsSelected = '<*>'.allMatches(blackCardChoose.text).length;
         whiteCards = gameSession.playersDetailMap[user.username].whiteCardDeck;
@@ -104,18 +105,21 @@ class GamePageState extends State<GamePage> {
           return Scaffold(
             appBar: AppBar(
                 elevation: 0,
-                title: RaisedButton(
-                    textColor: Colors.white,
-                    color: Colors.blue,
-                    child: Text(canICompile
-                        ? "Compila carta nera"
-                        : "Seleziona le carte"),
-                    onPressed: canICompile
-                        ? () {
-                            GameSessionManager.chooseWhiteCards(
-                                _selectedWhiteCards);
-                          }
-                        : null),
+                title: Visibility(
+                    visible:
+                        gameSession.gamePhase != GameSessionPhase.START_TURN,
+                    child: RaisedButton(
+                        textColor: Colors.white,
+                        color: Colors.blue,
+                        child: Text(canICompile
+                            ? "Compila carta nera"
+                            : "Seleziona le carte"),
+                        onPressed: canICompile
+                            ? () {
+                                GameSessionManager.chooseWhiteCards(
+                                    _selectedWhiteCards);
+                              }
+                            : null)),
                 brightness: Brightness.dark,
                 backgroundColor: Colors.transparent,
                 actions: <Widget>[
@@ -174,7 +178,7 @@ class GamePageState extends State<GamePage> {
             Positioned(
                 right: 20,
                 child: Leaderboard(
-                  wcRequirement: gameSession.currentBlackCard.whiteCardsAllowed,
+                  currentPlayerApplication: currentUserInApplication,
                   blackKingPlayer: gameSession.blackKing,
                   playersMap: gameSession.playersDetailMap,
                 ))
@@ -278,7 +282,7 @@ class GamePageState extends State<GamePage> {
               top: 100,
               right: 20,
               child: Leaderboard(
-                wcRequirement: gameSession.currentBlackCard.whiteCardsAllowed,
+                currentPlayerApplication: currentUserInApplication,
                 blackKingPlayer: gameSession.blackKing,
                 playersMap: gameSession.playersDetailMap,
               )),

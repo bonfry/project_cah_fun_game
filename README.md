@@ -23,6 +23,6 @@ dart2native lib_webserver/main.dart -o <path>/cah_server.exe
 
 ## Credits
 
-[Flutter](https://flutter.dev/) for the environment
-[ProjectCah42]([https://www.cah42project.it/](https://www.cah42project.it/)) for the cards
+[Flutter](https://flutter.dev/) for the environment </br>
+[ProjectCah42](https://www.cah42project.it/) for the cards </br>
 [LittleRobotSoundFactory](https://freesound.org/s/270402/) for win song

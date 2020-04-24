@@ -33,6 +33,9 @@ class RequestController {
       case RequestName.REMOVE_PLAYER_REQUEST:
         gameSessionToBroadcast = GameSessionController.removeUser(request);
         break;
+      case RequestName.RECOVER_SESSION_REQUEST:
+        return SessionJoinController.recoverSession(request);
+        break;
     }
 
     broadcastResponse(gameSessionToBroadcast);

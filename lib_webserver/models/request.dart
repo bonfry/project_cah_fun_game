@@ -34,4 +34,5 @@ class RequestName {
   static const String SELECT_BLACK_CARD_REQUEST = 'selectBlackCard';
   static const String FINISH_GAME_REQUEST = 'finishGame';
   static const String REMOVE_PLAYER_REQUEST = 'removePlayer';
+  static const String RECOVER_SESSION_REQUEST = 'recoverSession';
 }

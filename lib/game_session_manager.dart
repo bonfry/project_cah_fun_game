@@ -1,5 +1,5 @@
+import 'dart:async';
 import 'dart:convert';
-// ignore: avoid_web_libraries_in_flutter
 import 'dart:html';
 
 import 'package:projectcahfungame/models/game_session.dart';
@@ -17,10 +17,12 @@ class GameSessionManager {
   static OnGameSessionUpdate _onSessionUpdate;
   static Function _onSocketDisconnection;
   static Function _onSocketConnection = () {};
+  static Function _onSocketReconnection = () {};
 
   static void init() {
     _socketChannel = WebSocket('ws://bonfrycah.ddns.net:4040/ws');
     _setUpSocketListener();
+    _setUpSocketDisconnection();
   }
 
   static void _setUpSocketListener() {
@@ -48,6 +50,41 @@ class GameSessionManager {
         _onSessionUpdate(currentGameSession);
       }
     });
+  }
+
+  static void _setUpSocketDisconnection() {
+    _socketChannel.onClose.listen((event) {
+      //TODO: Gestire riconnessione al server
+      _tryToReconnect().then((ws) {
+        _socketChannel = ws;
+        _setUpSocketListener();
+        _setUpSocketDisconnection();
+        _onSocketReconnection();
+      });
+    });
+  }
+
+  static Future<WebSocket> _tryToReconnect({int times = 0}) async {
+    var _completer = Completer<WebSocket>();
+
+    print('Tentativo n° $times');
+
+    var newWebSocketConnection = WebSocket('ws://bonfrycah.ddns.net:4040/ws');
+
+    newWebSocketConnection.onOpen.listen((event) {
+      print(' LA MADONNA SI E\' CONNESSA');
+      _completer.complete(newWebSocketConnection);
+    });
+    newWebSocketConnection.onError.listen((event) {
+      print('PORCO DIO BONO');
+      if (times == 3) {
+        throw new Exception('No connection');
+      } else {
+        return _tryToReconnect(times: times + 1);
+      }
+    });
+
+    return _completer.future;
   }
 
   static void onUpdate(OnGameSessionUpdate callback) {
@@ -110,7 +147,11 @@ class GameSessionManager {
   }
 
   static void logoutFromGame() {
-    _socketChannel.close();
+    SessionData.getUser().then((user) => removePlayer(user.username));
+  }
+
+  static void recoverSession() {
+    _sendMessageToServer('recoverSession', {});
   }
 }
 

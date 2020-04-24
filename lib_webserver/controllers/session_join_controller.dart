@@ -7,7 +7,9 @@ import '../models/game_session.dart';
 import '../models/request.dart';
 import '../models/user.dart';
 import '../sever_data.dart';
-import 'card_controllet.dart';
+import 'card_controller.dart';
+import 'game_session_controller.dart';
+import 'user_controller.dart';
 
 //Class used for session access
 class SessionJoinController {
@@ -38,6 +40,22 @@ class SessionJoinController {
     }
 
     return session;
+  }
+
+  static void recoverSession(Request request) {
+    var userToken = request.params['user_token'];
+    var username = UserController.getUsernameByToken(userToken);
+
+    try {
+      var session = GameSessionController.getSessionByPlayerToken(userToken);
+      session.playersDetailsMap[username].online = true;
+
+      var sessionEncoded = JsonEncoder().convert(session.toMap());
+      request.wsConnection.add(sessionEncoded);
+    } catch (err) {
+      print(
+          'Err: l \'utente $username  ha fatto l\'accesso ma non ha nessuna sesione in corso!');
+    }
   }
 
   // Create a session and add user to playersMap

@@ -1,6 +1,7 @@
 class PlayerDetails {
   int points;
   bool hasSent = false;
+  bool online;
   List<String> whiteCardIdsOnHand;
   List<String> whiteCardIdsSelected;
 
@@ -8,6 +9,7 @@ class PlayerDetails {
       {this.points = 0,
       this.whiteCardIdsOnHand,
       this.whiteCardIdsSelected,
+      this.online = true,
       this.hasSent = false}) {
     whiteCardIdsOnHand ??= [];
   }

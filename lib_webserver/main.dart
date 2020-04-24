@@ -2,10 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'content_type_table.dart';
-import 'controllers/card_controllet.dart';
+import 'controllers/card_controller.dart';
 import 'controllers/game_session_controller.dart';
 import 'controllers/request_controller.dart';
-import 'controllers/user_controller.dart';
 import 'models/file_extension.dart';
 import 'sever_data.dart';
 
@@ -44,8 +43,8 @@ void main() {
 
             var gameSession =
                 GameSessionController.getSessionByUsername(username);
-            UserController.removePlayer(username);
 
+            gameSession.playersDetailsMap[username].online = false;
             RequestController.broadcastResponse(gameSession);
           });
         });

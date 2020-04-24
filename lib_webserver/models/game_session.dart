@@ -2,6 +2,7 @@ import 'enums/game_session_phase.dart';
 import 'player_details.dart';
 import 'player_iterator.dart';
 
+//TODO: rimuovere giocatore dall'iteratore quando offline
 class GameSession {
   final String id;
 
@@ -63,7 +64,9 @@ class GameSession {
   Map<String, dynamic> toMap() {
     var playerMap = <String, dynamic>{};
 
-    playersDetailsMap.keys.forEach((username) {
+    playersDetailsMap.keys
+        .where((username) => playersDetailsMap[username].online)
+        .forEach((username) {
       playerMap[username] = playersDetailsMap[username].toMap();
     });
 

@@ -19,7 +19,6 @@ class WhiteCardDeck extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('hash Lista ${whiteCardDeck.hashCode}');
     var whiteCardsBuilt = whiteCardDeck.map(buildGameCard).toList();
 
     return Container(

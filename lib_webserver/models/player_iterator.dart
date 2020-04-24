@@ -98,7 +98,7 @@ class LinkedCircularList<T> {
   LinkedNode<T> _getNode(int index) {
     var node = head;
 
-    for (var i = 1; i < length; i++) {
+    for (var i = 1; i < index; i++) {
       node = node.getNext();
     }
 

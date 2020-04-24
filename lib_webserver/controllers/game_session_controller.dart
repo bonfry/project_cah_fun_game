@@ -2,7 +2,7 @@ import '../models/enums/game_session_phase.dart';
 import '../models/game_session.dart';
 import '../models/request.dart';
 import '../sever_data.dart';
-import 'card_controllet.dart';
+import 'card_controller.dart';
 import 'user_controller.dart';
 
 class GameSessionController {
@@ -59,7 +59,7 @@ class GameSessionController {
   static GameSession selectBlackCard(Request request) {
     var playerTurnWinner = request.params['player_turn_winner'];
     var userToken = request.params['user_token'];
-    var session = GameSessionController.getSessionByPlayerToken(userToken);
+    var session = getSessionByPlayerToken(userToken);
 
     _addPoint(session, playerTurnWinner);
     _prepareForNextMatch(session);

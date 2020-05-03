@@ -1,0 +1,5 @@
+name: cah_common_values
+version: 0.1.0+1
+
+environment:
+  sdk: ">=2.7.0 <3.0.0"

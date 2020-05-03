@@ -2,12 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
-import '../lib_webserver/models/enums/game_session_phase.dart';
-import '../lib_webserver/models/game_session.dart';
+import 'package:cah_common_values/enums/game_session_phase.dart';
+import 'package:cah_common_values/request.dart';
+import 'package:cah_common_values/request_name.dart';
 
+import '../lib_webserver/models/game_session.dart';
 import 'bot_print_helper.dart';
-import '../lib_webserver/models/request.dart';
-import 'card_controllet.dart';
+import 'card_controller.dart';
 
 void main() async {
   var blackCards = CardController.loadBlackCards();

@@ -90,13 +90,15 @@ void main() {
 
 void manageCardRequest(HttpRequest request) {
   var cards = <String, dynamic>{
-    'white_cards': ServerData.whiteCards.map((c) => c.toMap()).toList(),
-    'black_cards': ServerData.blackCards.map((c) => c.toMap()).toList()
+    'white_cards': ServerData.whiteCards,
+    'black_cards': ServerData.blackCards
   };
+
+  var serializedCards = jsonEncode(cards);
 
   request.response
     ..headers.add('Access-Control-Allow-Origin', '*')
     ..statusCode = HttpStatus.accepted
-    ..write(JsonEncoder().convert(cards))
+    ..write(serializedCards)
     ..close();
 }

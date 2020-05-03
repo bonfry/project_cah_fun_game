@@ -1,11 +1,11 @@
-import 'package:projectcahfungame/models/game_session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:projectcahfungame/models/game_session.dart';
 
 class Leaderboard extends StatelessWidget {
   final String blackKingPlayer;
   final String currentPlayerApplication;
-  final Map<String, PlayerDetail> playersMap;
+  final Map<String, PlayerDetails> playersMap;
 
   static const Icon _blackKingIcon = Icon(MaterialCommunityIcons.chess_king);
   static const Icon _hasSentIcon = Icon(
@@ -22,15 +22,13 @@ class Leaderboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     var playersOrderByScore = playersMap.keys.toList()
-      ..sort((username1,username2){
+      ..sort((username1, username2) {
         var userPoints1 = playersMap[username1].points;
         var userPoints2 = playersMap[username2].points;
 
-        return userPoints1.compareTo(userPoints2)*-1;
+        return userPoints1.compareTo(userPoints2) * -1;
       });
-    
 
     return Card(
       child: Padding(
@@ -42,7 +40,7 @@ class Leaderboard extends StatelessWidget {
               'Leaderboard',
               style: TextStyle(fontWeight: FontWeight.w600, fontSize: 17),
             ),
-            ...playersOrderByScore.sublist(0,5).map(createPlayerLabel),
+            ...playersOrderByScore.sublist(0, 5).map(createPlayerLabel),
             Divider(
               color: Colors.grey,
               thickness: 5,
@@ -54,14 +52,12 @@ class Leaderboard extends StatelessWidget {
     );
   }
 
-  Widget createPlayerLabel(String username){
+  Widget createPlayerLabel(String username) {
     double iconOpacity =
-    (playersMap[username].hasSent || blackKingPlayer == username)
-        ? 1
-        : 0;
+        (playersMap[username].hasSent || blackKingPlayer == username) ? 1 : 0;
 
     var iconToShow =
-    blackKingPlayer == username ? _blackKingIcon : _hasSentIcon;
+        blackKingPlayer == username ? _blackKingIcon : _hasSentIcon;
 
     return Container(
         padding: EdgeInsets.only(top: 10),

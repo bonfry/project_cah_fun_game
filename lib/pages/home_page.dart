@@ -1,8 +1,8 @@
-import 'package:projectcahfungame/models/card.dart';
-import 'package:projectcahfungame/session_data.dart';
-import 'package:projectcahfungame/widgets/game_card.dart';
+import 'package:cah_common_values/card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:projectcahfungame/session_data.dart';
+import 'package:projectcahfungame/widgets/game_card.dart';
 
 import 'game_page.dart';
 

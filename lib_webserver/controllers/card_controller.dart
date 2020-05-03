@@ -2,7 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
-import '../models/card.dart';
+import 'package:cah_common_values/card.dart';
+
 import '../models/game_session.dart';
 import '../sever_data.dart';
 

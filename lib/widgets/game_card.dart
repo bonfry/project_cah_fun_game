@@ -1,4 +1,4 @@
-import 'package:projectcahfungame/models/card.dart' as cardModel;
+import 'package:cah_common_values/card.dart' as cardModel;
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 

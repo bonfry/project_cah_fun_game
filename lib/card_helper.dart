@@ -1,11 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
-// ignore: avoid_web_libraries_in_flutter
 import 'dart:html';
 
+import 'package:cah_common_values/card.dart';
 import 'package:projectcahfungame/session_data.dart';
-
-import 'models/card.dart';
 
 Future loadCards() {
   var completer = Completer();

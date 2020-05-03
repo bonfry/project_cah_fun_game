@@ -1,4 +1,4 @@
-import 'package:projectcahfungame/models/card.dart';
+import 'package:cah_common_values/card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'models/user.dart';

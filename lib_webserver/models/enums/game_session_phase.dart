@@ -1,9 +1,0 @@
-enum GameSessionPhase {
-  LOBBY,
-  START_GAME,
-  START_TURN,
-  CHOICE_WHITE,
-  CHOICE_BLACK,
-  FINISH_TURN,
-  FINISH_GAME,
-}

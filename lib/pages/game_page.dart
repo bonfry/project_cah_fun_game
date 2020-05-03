@@ -1,10 +1,11 @@
 import 'dart:math';
 
+import 'package:cah_common_values/card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:projectcahfungame/game_session_manager.dart';
-import 'package:projectcahfungame/models/card.dart';
-import 'package:projectcahfungame/models/enums/game_session_phase.dart';
+import 'package:cah_common_values/enums/game_session_phase.dart';
+
 import 'package:projectcahfungame/models/game_session.dart';
 import 'package:projectcahfungame/pages/login_page.dart';
 import 'package:projectcahfungame/pages/winner_page.dart';
@@ -107,7 +108,8 @@ class GamePageState extends State<GamePage> {
                 elevation: 0,
                 title: Visibility(
                     visible:
-                        gameSession.gamePhase != GameSessionPhase.START_TURN,
+                        gameSession.gamePhase == GameSessionPhase.START_TURN &&
+                            !isBlackKing,
                     child: RaisedButton(
                         textColor: Colors.white,
                         color: Colors.blue,

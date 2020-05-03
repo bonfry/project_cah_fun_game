@@ -25,6 +25,8 @@ dependencies:
   shared_preferences: ^0.5.6+3
   uuid: ^2.0.4
   colorize: ^2.0.0
+  cah_common_values:
+    path: lib_common
 
 dev_dependencies:
   flutter_test:

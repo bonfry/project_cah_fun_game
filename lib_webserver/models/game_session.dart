@@ -1,4 +1,5 @@
-import 'enums/game_session_phase.dart';
+import 'package:cah_common_values/enums/game_session_phase.dart';
+
 import 'player_details.dart';
 import 'player_iterator.dart';
 

@@ -1,11 +1,11 @@
+import 'package:cah_common_values/card.dart';
+import 'package:cah_common_values/enums/game_session_phase.dart';
 import 'package:projectcahfungame/session_data.dart';
 
-import 'card.dart';
-import 'enums/game_session_phase.dart';
-
+/// For managing the session in the client
 class GameSession {
   final String id;
-  Map<String, PlayerDetail> playersDetailMap;
+  Map<String, PlayerDetails> playersDetailMap;
   BlackCard currentBlackCard;
   GameSessionPhase gamePhase;
   String blackKing;
@@ -18,39 +18,39 @@ class GameSession {
       this.host,
       this.blackKing});
 
-  static GameSession parseMap(Map<String, dynamic> gameSession) {
-    var playerDetailParsedMap = Map<String, PlayerDetail>();
+  //Create GameSession from JSON Map
+  factory GameSession.fromJson(Map<String, dynamic> json) {
+    Map playersUnparsed = json['players'];
     BlackCard currentBlackCard;
 
-    (gameSession['players'] as Map<String, Object>).keys.forEach((usrName) {
-      playerDetailParsedMap[usrName] =
-          PlayerDetail.parseMap(gameSession['players'][usrName]);
-    });
+    Map<String, PlayerDetails> playersDetailsParsed = playersUnparsed
+        .map((key, pdJson) => MapEntry(key, PlayerDetails.fromJson(pdJson)));
 
-    if (gameSession['cur_black_card_id'] != null) {
+    if (json['cur_black_card_id'] != null) {
       currentBlackCard = SessionData.blackCards
-          .firstWhere((card) => card.id == gameSession['cur_black_card_id']);
+          .firstWhere((card) => card.id == json['cur_black_card_id']);
     }
 
-    String host = gameSession['host'];
-    String blackKing = gameSession['black_king'];
+    String host = json['host'];
+    String blackKing = json['black_king'];
 
-    return GameSession(gameSession['id'],
-        gamePhase: GameSessionPhase.values[gameSession['phase']],
+    return GameSession(json['id'],
+        gamePhase: GameSessionPhase.values[json['phase']],
         currentBlackCard: currentBlackCard,
         host: host,
         blackKing: blackKing,
-        playersDetailMap: playerDetailParsedMap);
+        playersDetailMap: playersDetailsParsed);
   }
 }
 
-class PlayerDetail {
+///Player information about own game session
+class PlayerDetails {
   int points;
   bool hasSent;
   List<WhiteCard> whiteCardDeck;
   List<WhiteCard> whiteCardsChoose;
 
-  PlayerDetail(
+  PlayerDetails(
       {this.points = 0,
       this.whiteCardsChoose,
       this.whiteCardDeck,
@@ -58,14 +58,15 @@ class PlayerDetail {
     whiteCardsChoose = whiteCardsChoose == null ? [] : whiteCardsChoose;
   }
 
-  static PlayerDetail parseMap(Map<String, dynamic> playerDetails) {
+  /// Create [PlayerDetails] from JSON
+  factory PlayerDetails.fromJson(Map<String, dynamic> json) {
     var whiteCardsOnHandParsed = <WhiteCard>[];
     var whiteCardSelectedParsed = <WhiteCard>[];
 
-    var wCardsOnHand = List<String>.from(playerDetails['white_card_hand']);
-    var wCardsSelected = playerDetails['white_card_selected'] != null
-        ? List<String>.from(playerDetails['white_card_selected'])
-        : <WhiteCard>[];
+    var wCardsOnHand = List<String>.from(json['white_card_hand']);
+    var wCardsSelected = json['white_card_selected'] != null
+        ? List<String>.from(json['white_card_selected'])
+        : [];
 
     whiteCardSelectedParsed = wCardsSelected
         .map((cId) =>
@@ -77,9 +78,9 @@ class PlayerDetail {
             SessionData.whiteCards.firstWhere((card) => card.id == cId))
         .toList();
 
-    return PlayerDetail(
-        points: playerDetails['points'],
-        hasSent: playerDetails['has_sent'],
+    return PlayerDetails(
+        points: json['points'] as int,
+        hasSent: json['has_sent'] as bool,
         whiteCardDeck: whiteCardsOnHandParsed,
         whiteCardsChoose: whiteCardSelectedParsed);
   }

@@ -1,16 +1,20 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cah_common_values/request.dart';
+import 'package:cah_common_values/request_name.dart';
+
 import '../models/game_session.dart';
-import '../models/request.dart';
 import '../sever_data.dart';
 import 'game_session_controller.dart';
 import 'session_join_controller.dart';
 
+/// Controller for managing requests and responding to clients
 class RequestController {
+  /// Parse the request and call the selected
   static void parseRequest(String requestString, WebSocket socket) {
-    Map<String, dynamic> requestJsonMap = JsonDecoder().convert(requestString);
-    var request = Request.parseJson(requestJsonMap, socket: socket);
+    Map requestJsonMap = jsonDecode(requestString);
+    var request = Request.fromJson(requestJsonMap, wsConnection: socket);
 
     GameSession gameSessionToBroadcast;
 
@@ -41,6 +45,7 @@ class RequestController {
     broadcastResponse(gameSessionToBroadcast);
   }
 
+  /// Send new game session to other clients in the same session
   static void broadcastResponse(GameSession gameSessionToBroadcast) {
     var jsonEncoder = JsonEncoder();
 
@@ -52,7 +57,7 @@ class RequestController {
             jsonEncoder.convert(gameSessionToBroadcast.toMap());
         playerSocket.add(jsonEncodedResponse);
       } catch (err) {
-        print('Errore in broadcast: $err');
+        print('Broadcast error: $err');
       }
     }
   }

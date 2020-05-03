@@ -2,14 +2,17 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:html';
 
+import 'package:cah_common_values/card.dart';
+import 'package:cah_common_values/request.dart';
+import 'package:cah_common_values/request_name.dart';
 import 'package:projectcahfungame/models/game_session.dart';
 import 'package:projectcahfungame/models/user.dart';
 import 'package:projectcahfungame/session_data.dart';
 
-import 'models/card.dart';
-
+/// Session update callback
 typedef void OnGameSessionUpdate(GameSession session);
 
+/// Static class for manage the communication between client and server
 class GameSessionManager {
   static bool isConnectedToServer = false;
   static GameSession currentGameSession;
@@ -19,12 +22,14 @@ class GameSessionManager {
   static Function _onSocketConnection = () {};
   static Function _onSocketReconnection = () {};
 
+  ///Init the WebSocket connection and set up its listeners
   static void init() {
     _socketChannel = WebSocket('ws://bonfrycah.ddns.net:4040/ws');
     _setUpSocketListener();
     _setUpSocketDisconnection();
   }
 
+  ///Sets up socket opening event listeners
   static void _setUpSocketListener() {
     _socketChannel.onOpen.listen((event) {
       isConnectedToServer = true;
@@ -46,12 +51,13 @@ class GameSessionManager {
       } else if (socketResponse.containsKey('error')) {
         throw ServerException(socketResponse['error']);
       } else {
-        currentGameSession = GameSession.parseMap(socketResponse);
+        currentGameSession = GameSession.fromJson(socketResponse);
         _onSessionUpdate(currentGameSession);
       }
     });
   }
 
+  ///Sets up socket closing event listeners
   static void _setUpSocketDisconnection() {
     _socketChannel.onClose.listen((event) {
       //TODO: Gestire riconnessione al server
@@ -64,6 +70,7 @@ class GameSessionManager {
     });
   }
 
+  /// Try to reconnect after WebSocket disconnection for 3 times
   static Future<WebSocket> _tryToReconnect({int times = 0}) async {
     var _completer = Completer<WebSocket>();
 
@@ -87,18 +94,22 @@ class GameSessionManager {
     return _completer.future;
   }
 
+  /// Save [OnGameSessionUpdate] callback on the manager
   static void onUpdate(OnGameSessionUpdate callback) {
     _onSessionUpdate = callback;
   }
 
+  /// Save callback for socket disconnection on the manager
   static void onDisconnect(Function onDisconnect) {
     _onSocketDisconnection = onDisconnect;
   }
 
+  /// Save callback for socket connection on the manager
   static void onConnection(Function onConnect) {
     _onSocketConnection = onConnect;
   }
 
+  /// Sign in to server and create or join to a server
   static signIn(String username, {String gameSessionId}) {
     var params = {
       'username': username,
@@ -111,6 +122,7 @@ class GameSessionManager {
     _sendMessageToServer('signIn', params);
   }
 
+  ///Wrapper for sending messages to server
   static _sendMessageToServer(
       String requestName, Map<String, dynamic> params) async {
     var user = await SessionData.getUser();
@@ -119,42 +131,54 @@ class GameSessionManager {
       params['user_token'] = user.token;
     }
 
-    var request = {'request_name': requestName, 'params': params};
-    var serializedRequest = JsonEncoder().convert(request);
+    var request = Request(requestName, params);
+    var serializedRequest = jsonEncode(request);
+
     _socketChannel.send(serializedRequest);
   }
 
+  /// When user is a black king send a black card compiled which has been
+  /// chosen from him
   static chooseBlackCard(String playerWinner) {
-    _sendMessageToServer(
-        'selectBlackCard', {'player_turn_winner': playerWinner});
+    _sendMessageToServer(RequestName.SELECT_BLACK_CARD_REQUEST,
+        {'player_turn_winner': playerWinner});
   }
 
+  /// Players in send theirs white card choice which will'be used to compile
+  /// current black card
   static void chooseWhiteCards(List<WhiteCard> cards) {
-    _sendMessageToServer('sendWhiteCards',
+    _sendMessageToServer(RequestName.SEND_WHITE_CARDS_REQUEST,
         {'white_card_indexes': cards.map((c) => c.id).toList()});
   }
 
+  ///Send init game signal
   static void initGame() {
-    _sendMessageToServer('initGame', {});
+    _sendMessageToServer(RequestName.INIT_GAME_REQUEST, {});
   }
 
+  /// Send end game signal
   static void finishGame() {
-    _sendMessageToServer('finishGame', {});
+    _sendMessageToServer(RequestName.FINISH_GAME_REQUEST, {});
   }
 
+  /// Kick player fom session
   static removePlayer(String username) {
-    _sendMessageToServer('removePlayer', {'username': username});
+    _sendMessageToServer(
+        RequestName.REMOVE_PLAYER_REQUEST, {'username': username});
   }
 
+  /// Log out user from session
   static void logoutFromGame() {
     SessionData.getUser().then((user) => removePlayer(user.username));
   }
 
+  /// Try to recover current session after disconnection
   static void recoverSession() {
     _sendMessageToServer('recoverSession', {});
   }
 }
 
+/// Exception use for prompt exceptions from server
 class ServerException implements Exception {
   String message;
   ServerException(this.message);

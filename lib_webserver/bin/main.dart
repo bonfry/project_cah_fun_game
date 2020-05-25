@@ -11,7 +11,7 @@ import 'sever_data.dart';
 void main() {
   CardController.loadCards();
 
-  HttpServer.bind(InternetAddress.anyIPv4, 4040).then((HttpServer server) {
+  HttpServer.bind('0.0.0.0', 4040).then((HttpServer server) {
     print('[+]WebSocket listening at -- ws://localhost:4040');
     server.listen((HttpRequest request) {
       if (request.uri.path.contains('getCards')) {

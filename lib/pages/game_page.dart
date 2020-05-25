@@ -1,11 +1,9 @@
 import 'dart:math';
 
-import 'package:cah_common_values/card.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
-import 'package:projectcahfungame/game_session_manager.dart';
+import 'package:cah_common_values/card.dart' as cardModels;
 import 'package:cah_common_values/enums/game_session_phase.dart';
-
+import 'package:flutter/material.dart';
+import 'package:projectcahfungame/game_session_manager.dart';
 import 'package:projectcahfungame/models/game_session.dart';
 import 'package:projectcahfungame/pages/login_page.dart';
 import 'package:projectcahfungame/pages/winner_page.dart';
@@ -13,7 +11,7 @@ import 'package:projectcahfungame/widgets/game_card.dart';
 import 'package:projectcahfungame/widgets/leaderboard.dart';
 import 'package:projectcahfungame/widgets/white_card_deck.dart';
 
-import '../main.dart';
+import '../game_session_scaffold.dart';
 import '../session_data.dart';
 
 class GamePage extends StatefulWidget {
@@ -24,13 +22,21 @@ class GamePage extends StatefulWidget {
 }
 
 class GamePageState extends State<GamePage> {
-  BlackCard blackCardChoose;
-  List<WhiteCard> _selectedWhiteCards = <WhiteCard>[];
-  List<WhiteCard> whiteCards = [];
-  int _maxWhiteCardsSelected;
+  //Game info
   GameSession gameSession;
-  String currentUserInApplication = '';
-  GamePageState();
+  String clientUsername;
+  int _maxWhiteCardsSelected;
+  cardModels.BlackCard blackCardChoose;
+  List<cardModels.WhiteCard> _selectedWhiteCards = <cardModels.WhiteCard>[];
+  List<cardModels.WhiteCard> whiteCards = [];
+  bool isChoiceBlackTurn = false;
+  bool isBlackKing = false;
+  bool isHost = false;
+  bool canICompile = false;
+
+  //Screen size info
+  double width = 0;
+  double mediumScreenWidth = 768;
 
   @override
   void initState() {
@@ -42,8 +48,9 @@ class GamePageState extends State<GamePage> {
     blackCardChoose = gameSession.currentBlackCard;
 
     SessionData.getUser().then((user) {
-      currentUserInApplication = user.username;
+      clientUsername = user.username;
       setState(() {
+        isBlackKing = gameSession.blackKing == clientUsername;
         _maxWhiteCardsSelected = '<*>'.allMatches(blackCardChoose.text).length;
         whiteCards = gameSession.playersDetailMap[user.username].whiteCardDeck;
       });
@@ -58,6 +65,10 @@ class GamePageState extends State<GamePage> {
         blackCardChoose = gameSession.currentBlackCard;
         _maxWhiteCardsSelected = '<*>'.allMatches(blackCardChoose.text).length;
         whiteCards = gameSession.playersDetailMap[user.username].whiteCardDeck;
+        isChoiceBlackTurn =
+            gameSession.gamePhase == GameSessionPhase.CHOICE_BLACK;
+        isBlackKing = clientUsername == gameSession.blackKing;
+        isHost = clientUsername == gameSession.host;
 
         if (oldPhase == GameSessionPhase.CHOICE_BLACK &&
             session.gamePhase == GameSessionPhase.START_TURN) {
@@ -79,84 +90,40 @@ class GamePageState extends State<GamePage> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<String>(
-        future: SessionData.getUser().then((u) => u.username),
-        builder: (BuildContext context, AsyncSnapshot<String> snap) {
-          var isChoiceBlackTurn =
-              gameSession.gamePhase == GameSessionPhase.CHOICE_BLACK;
-          var isBlackKing = snap?.data == gameSession.blackKing;
-          var isHost = snap.data == gameSession.host;
-          bool canICompile =
-              _selectedWhiteCards.length == _maxWhiteCardsSelected;
+    width = MediaQuery.of(context).size.width;
+    canICompile = _selectedWhiteCards.length == _maxWhiteCardsSelected;
 
-          Widget scaffoldToRender = Scaffold();
+    if (clientUsername == null) {
+      return Scaffold();
+    }
 
-          if (isChoiceBlackTurn && isBlackKing) {
-            scaffoldToRender = showBlackCardChoice();
-          } else if (isChoiceBlackTurn) {
-            scaffoldToRender = showBlackCardChoice(sendResults: false);
-            // showWaitingAlert('Attendi la scelta della carta nera');
-          } else if (isBlackKing) {
-            scaffoldToRender =
-                showWaitingAlert('Attendi che gli altri giocatori scelgano');
-          } else if (!isBlackKing) {
-            scaffoldToRender = showWhiteChoice();
-          }
+    Widget scaffoldToRender = Scaffold();
 
-          return Scaffold(
-            appBar: AppBar(
-                elevation: 0,
-                title: Visibility(
-                    visible:
-                        gameSession.gamePhase == GameSessionPhase.START_TURN &&
-                            !isBlackKing,
-                    child: RaisedButton(
-                        textColor: Colors.white,
-                        color: Colors.blue,
-                        child: Text(canICompile
-                            ? "Compila carta nera"
-                            : "Seleziona le carte"),
-                        onPressed: canICompile
-                            ? () {
-                                GameSessionManager.chooseWhiteCards(
-                                    _selectedWhiteCards);
-                              }
-                            : null)),
-                brightness: Brightness.dark,
-                backgroundColor: Colors.transparent,
-                actions: <Widget>[
-                  IconButton(
-                    tooltip: 'Esci dalla sessione',
-                    icon: Icon(Icons.exit_to_app),
-                    onPressed: () {
-                      showLogoutConfirmModal();
-                    },
-                    color: Colors.black,
-                  ),
-                  Visibility(
-                    visible: snap.hasData && isHost,
-                    child: IconButton(
-                      tooltip: 'Rimuovi giocatore',
-                      icon: Icon(MaterialCommunityIcons.account_remove),
-                      onPressed: () {
-                        showRemoveUserModal(snap.data);
-                      },
-                      color: Colors.black,
-                    ),
-                  ),
-                  Visibility(
-                    visible: isHost,
-                    child: IconButton(
-                      tooltip: 'Concludi partita',
-                      icon: Icon(MaterialCommunityIcons.close),
-                      color: Colors.black,
-                      onPressed: finishGame,
-                    ),
-                  )
-                ]),
-            body: scaffoldToRender,
-          );
-        });
+    if (isChoiceBlackTurn && isBlackKing) {
+      scaffoldToRender = showBlackCardChoice();
+    } else if (isChoiceBlackTurn) {
+      scaffoldToRender = showBlackCardChoice(sendResults: false);
+    } else if (isBlackKing) {
+      scaffoldToRender =
+          showWaitingAlert('Attendi che gli altri giocatori scelgano');
+    } else if (!isBlackKing) {
+      scaffoldToRender = showWhiteChoice();
+    }
+
+    return ScaffoldForSignedPlayers(
+        gameSession: gameSession,
+        clientUsername: clientUsername,
+        body: scaffoldToRender,
+        appBarLeading: RaisedButton(
+            textColor: Colors.white,
+            color: Colors.blue,
+            child:
+                Text(canICompile ? "Compila carta nera" : "Seleziona le carte"),
+            onPressed: canICompile
+                ? () {
+                    GameSessionManager.chooseWhiteCards(_selectedWhiteCards);
+                  }
+                : null));
   }
 
   Widget showWhiteChoice() {
@@ -165,25 +132,31 @@ class GamePageState extends State<GamePage> {
         Expanded(
             child: Stack(
           children: <Widget>[
-            Center(
+            Align(
+              alignment: width > 734 || width < mediumScreenWidth
+                  ? Alignment.center
+                  : Alignment.centerLeft,
               child: Container(
                 margin: EdgeInsets.all(20),
                 constraints: BoxConstraints(maxWidth: 450),
                 child: GameCard(
                   card: blackCardChoose,
-                  onClick: () {
-                    showLogoutConfirmModal();
-                  },
                 ),
               ),
             ),
-            Positioned(
-                right: 20,
-                child: Leaderboard(
-                  currentPlayerApplication: currentUserInApplication,
-                  blackKingPlayer: gameSession.blackKing,
-                  playersMap: gameSession.playersDetailMap,
-                ))
+            Visibility(
+              visible: width > mediumScreenWidth,
+              child: Positioned(
+                  right: 20,
+                  child: Container(
+                    width: 200,
+                    child: Leaderboard(
+                      currentPlayerApplication: clientUsername,
+                      blackKingPlayer: gameSession.blackKing,
+                      playersMap: gameSession.playersDetailMap,
+                    ),
+                  )),
+            )
           ],
         )),
         Text('Carte bianche'),
@@ -236,6 +209,40 @@ class GamePageState extends State<GamePage> {
     ));
   }
 
+  Widget createGameScreen(Widget body) {
+    return Column(
+      children: <Widget>[
+        Expanded(
+            child: Stack(
+          children: <Widget>[
+            body,
+            Positioned(
+              right: 20,
+              child: Visibility(
+                  visible: width > mediumScreenWidth,
+                  child: Leaderboard(
+                    currentPlayerApplication: clientUsername,
+                    blackKingPlayer: gameSession.blackKing,
+                    playersMap: gameSession.playersDetailMap,
+                  )),
+            )
+          ],
+        )),
+        Text('Carte bianche'),
+        WhiteCardDeck(
+          whiteCardDeck: whiteCards,
+          maxCardDeckToChoice: _maxWhiteCardsSelected,
+          whiteCardSelected: _selectedWhiteCards,
+          onChoose: (cards) {
+            setState(() {
+              _selectedWhiteCards = cards;
+            });
+          },
+        )
+      ],
+    );
+  }
+
   List<Widget> getMixedCompiledCards({bool sendResults = false}) {
     var outputCards = <Widget>[];
     var randomGenerator = Random();
@@ -283,88 +290,17 @@ class GamePageState extends State<GamePage> {
           Positioned(
               top: 100,
               right: 20,
-              child: Leaderboard(
-                currentPlayerApplication: currentUserInApplication,
-                blackKingPlayer: gameSession.blackKing,
-                playersMap: gameSession.playersDetailMap,
+              child: Container(
+                width: 200,
+                child: Leaderboard(
+                  currentPlayerApplication: clientUsername,
+                  blackKingPlayer: gameSession.blackKing,
+                  playersMap: gameSession.playersDetailMap,
+                ),
               )),
         ],
       ),
     );
-  }
-
-  showLogoutConfirmModal() {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Disconnessione dalla partita'),
-          content: SingleChildScrollView(
-            child: Text('Sei sicuro di voler uscire?'),
-          ),
-          actions: <Widget>[
-            FlatButton(
-              child: Text('SI'),
-              onPressed: exitFromSession,
-            ),
-            FlatButton(
-              child: Text('NO'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  showRemoveUserModal(String playerUsername) {
-    return showDialog<void>(
-        context: context,
-        barrierDismissible: false, // user must tap button!
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Rimuovi gli utenti'),
-            content: SingleChildScrollView(
-                child: ListBody(
-              children: gameSession.playersDetailMap.keys
-                  .where((username) => username != playerUsername)
-                  .map((username) => GestureDetector(
-                        child: Container(
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                  color: Color.fromRGBO(0, 0, 0, 0.5))),
-                          margin: EdgeInsets.symmetric(vertical: 5),
-                          padding: EdgeInsets.all(10),
-                          child: Text(username),
-                        ),
-                        onTap: () {
-                          GameSessionManager.removePlayer(username);
-                          Navigator.of(context).pop();
-                        },
-                      ))
-                  .toList(),
-            )),
-            actions: <Widget>[
-              FlatButton(
-                child: Text('CHIUDI'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        });
-  }
-
-  void exitFromSession() {
-    GameSessionManager.logoutFromGame();
-    SessionData.setUser(null);
-    Navigator.pushReplacement(context,
-        MaterialPageRoute(builder: (BuildContext context) => MyHomePage()));
   }
 
   void goToFinishGamePage() {

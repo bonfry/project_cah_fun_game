@@ -47,14 +47,11 @@ class RequestController {
 
   /// Send new game session to other clients in the same session
   static void broadcastResponse(GameSession gameSessionToBroadcast) {
-    var jsonEncoder = JsonEncoder();
-
     for (var player in gameSessionToBroadcast.playersDetailsMap.keys) {
       try {
         // ignore: close_sinks
         var playerSocket = ServerData.userConnections[player].socket;
-        var jsonEncodedResponse =
-            jsonEncoder.convert(gameSessionToBroadcast.toMap());
+        var jsonEncodedResponse = jsonEncode(gameSessionToBroadcast);
         playerSocket.add(jsonEncodedResponse);
       } catch (err) {
         print('Broadcast error: $err');

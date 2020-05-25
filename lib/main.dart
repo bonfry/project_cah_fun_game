@@ -1,7 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:projectcahfungame/pages/lobby_page.dart';
 import 'package:projectcahfungame/pages/login_page.dart';
 import 'package:projectcahfungame/session_data.dart';
-import 'package:flutter/material.dart';
 
 import 'game_session_manager.dart';
 import 'models/user.dart';
@@ -35,11 +35,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<User>(

@@ -1,9 +1,11 @@
 import 'package:cah_common_values/enums/game_session_phase.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:projectcahfungame/card_helper.dart';
 import 'package:projectcahfungame/game_session_manager.dart';
 import 'package:projectcahfungame/pages/game_page.dart';
 import 'package:projectcahfungame/widgets/error_alert.dart';
+import 'package:projectcahfungame/widgets/footer.dart';
 
 import 'lobby_page.dart';
 
@@ -45,101 +47,111 @@ class _LoginPageState extends State<LoginPage> {
       key: scaffoldKey,
       body: Column(
         children: <Widget>[
-          Container(
-              padding: EdgeInsets.all(15),
-              child: Text(
-                "Cards Against the Humanity",
-                style: TextStyle(fontSize: 25),
-              )),
-          Center(
-              child: Container(
-            constraints: BoxConstraints(maxWidth: 450),
-            margin: EdgeInsets.all(50),
-            child: Card(
-                child: Container(
-              padding: EdgeInsets.all(20),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      ErrorAlert(
-                        margin: EdgeInsets.all(5),
-                        message: errorMessage,
-                      ),
-                      Text(
-                        "Login",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w600),
-                      ),
-                      Padding(
-                        padding: EdgeInsets.symmetric(vertical: 10),
-                        child: TextFormField(
-                          maxLength: 15,
-                          decoration: InputDecoration(
-                              contentPadding:
-                                  EdgeInsets.symmetric(horizontal: 15),
-                              labelText: 'Username',
-                              border: OutlineInputBorder()),
-                          validator: (value) {
-                            if (value == null || value?.length == 0) {
-                              return 'Username non inserito';
-                            }
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: <Widget>[
+                  Container(
+                      padding: EdgeInsets.all(15),
+                      child: Text(
+                        "Cards Against the Humanity",
+                        style: TextStyle(fontSize: 25),
+                      )),
+                  Center(
+                      child: Container(
+                    constraints: BoxConstraints(maxWidth: 450),
+                    margin: EdgeInsets.all(50),
+                    child: Card(
+                        child: Container(
+                      padding: EdgeInsets.all(20),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: <Widget>[
+                              ErrorAlert(
+                                margin: EdgeInsets.all(5),
+                                message: errorMessage,
+                              ),
+                              Text(
+                                "Login",
+                                style: TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.w600),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.symmetric(vertical: 10),
+                                child: TextFormField(
+                                  maxLength: 15,
+                                  decoration: InputDecoration(
+                                      contentPadding:
+                                          EdgeInsets.symmetric(horizontal: 15),
+                                      labelText: 'Username',
+                                      border: OutlineInputBorder()),
+                                  validator: (value) {
+                                    if (value == null || value?.length == 0) {
+                                      return 'Username non inserito';
+                                    }
 
-                            return null;
-                          },
-                          onSaved: (value) {
-                            username = value;
-                          },
-                        ),
+                                    return null;
+                                  },
+                                  onSaved: (value) {
+                                    username = value;
+                                  },
+                                ),
+                              ),
+                              Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 10),
+                                  child: TextFormField(
+                                    decoration: InputDecoration(
+                                        contentPadding: EdgeInsets.symmetric(
+                                            horizontal: 15),
+                                        labelText: 'Codice sessione',
+                                        border: OutlineInputBorder()),
+                                    onSaved: (value) {
+                                      sessionCode = value;
+                                    },
+                                    onChanged: (value) {
+                                      setState(() {
+                                        canIJoinToSession = value.length > 0;
+                                      });
+                                    },
+                                  )),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: <Widget>[
+                                  RaisedButton(
+                                    child: Text(canIJoinToSession
+                                        ? 'Accedi a sessione'
+                                        : 'Crea sessione'),
+                                    onPressed: () {
+                                      setState(() {
+                                        errorMessage = null;
+                                      });
+                                      if (_formKey.currentState.validate()) {
+                                        _formKey.currentState.save();
+                                        loadCards().then((value) {
+                                          if (GameSessionManager
+                                              .isConnectedToServer) {
+                                            manageLogin();
+                                          } else {
+                                            GameSessionManager.onConnection(
+                                                manageLogin);
+                                          }
+                                        });
+                                      }
+                                    },
+                                  ),
+                                ],
+                              )
+                            ]),
                       ),
-                      Padding(
-                          padding: EdgeInsets.symmetric(vertical: 10),
-                          child: TextFormField(
-                            decoration: InputDecoration(
-                                contentPadding:
-                                    EdgeInsets.symmetric(horizontal: 15),
-                                labelText: 'Codice sessione',
-                                border: OutlineInputBorder()),
-                            onSaved: (value) {
-                              sessionCode = value;
-                            },
-                            onChanged: (value) {
-                              setState(() {
-                                canIJoinToSession = value.length > 0;
-                              });
-                            },
-                          )),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: <Widget>[
-                          RaisedButton(
-                            child: Text(canIJoinToSession
-                                ? 'Accedi a sessione'
-                                : 'Crea sessione'),
-                            onPressed: () {
-                              setState(() {
-                                errorMessage = null;
-                              });
-                              if (_formKey.currentState.validate()) {
-                                _formKey.currentState.save();
-                                loadCards().then((value) {
-                                  if (GameSessionManager.isConnectedToServer) {
-                                    manageLogin();
-                                  } else {
-                                    GameSessionManager.onConnection(
-                                        manageLogin);
-                                  }
-                                });
-                              }
-                            },
-                          ),
-                        ],
-                      )
-                    ]),
+                    )),
+                  )),
+                ],
               ),
-            )),
-          )),
+            ),
+          ),
+          Footer()
         ],
       ),
     );

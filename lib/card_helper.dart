@@ -5,10 +5,11 @@ import 'dart:html';
 import 'package:cah_common_values/card.dart';
 import 'package:projectcahfungame/session_data.dart';
 
+import 'game_session_manager.dart';
+
 Future loadCards() {
   var completer = Completer();
-  HttpRequest.getString("http://bonfrycah.ddns.net:4040/getCards")
-      .then((value) {
+  HttpRequest.getString("http://$HOSTNAME/api/getCards").then((value) {
     var cardFromResponse = JsonDecoder().convert(value);
 
     SessionData.whiteCards = (cardFromResponse['white_cards'] as List)

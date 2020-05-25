@@ -1,0 +1,7 @@
+name: cah_bot_service
+version: 1.5.0+1
+
+dependencies:
+  colorize: ^2.0.0
+  cah_common_values:
+    path: ../lib_common

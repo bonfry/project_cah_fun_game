@@ -12,6 +12,9 @@ import 'package:projectcahfungame/session_data.dart';
 /// Session update callback
 typedef void OnGameSessionUpdate(GameSession session);
 
+//Tmp hostname variable
+const String HOSTNAME = 'localhost:5000';
+
 /// Static class for manage the communication between client and server
 class GameSessionManager {
   static bool isConnectedToServer = false;
@@ -24,7 +27,12 @@ class GameSessionManager {
 
   ///Init the WebSocket connection and set up its listeners
   static void init() {
-    _socketChannel = WebSocket('ws://bonfrycah.ddns.net:4040/ws');
+    if (_socketChannel != null &&
+        _socketChannel.readyState != WebSocket.CLOSED) {
+      return;
+    }
+
+    _socketChannel = WebSocket('ws://$HOSTNAME/ws');
     _setUpSocketListener();
     _setUpSocketDisconnection();
   }
@@ -38,9 +46,10 @@ class GameSessionManager {
 
     _socketChannel.onMessage.listen((messageEvent) {
       if (messageEvent.data == 'disconected') {
-        _onSocketDisconnection();
+        return _onSocketDisconnection();
       }
-      var socketResponse = json.decode(messageEvent.data);
+
+      var socketResponse = jsonDecode(messageEvent.data);
 
       if (socketResponse.containsKey('user_token') &&
           socketResponse.containsKey('username')) {
@@ -49,7 +58,7 @@ class GameSessionManager {
 
         SessionData.setUser(User.login(userName, userToken));
       } else if (socketResponse.containsKey('error')) {
-        throw ServerException(socketResponse['error']);
+        throw ServerError(socketResponse['error']);
       } else {
         currentGameSession = GameSession.fromJson(socketResponse);
         _onSessionUpdate(currentGameSession);
@@ -76,7 +85,7 @@ class GameSessionManager {
 
     print('Tentativo n° $times');
 
-    var newWebSocketConnection = WebSocket('ws://bonfrycah.ddns.net:4040/ws');
+    var newWebSocketConnection = WebSocket('ws://$HOSTNAME/ws');
 
     newWebSocketConnection.onOpen.listen((event) {
       print(' LA MADONNA SI E\' CONNESSA');
@@ -174,12 +183,20 @@ class GameSessionManager {
 
   /// Try to recover current session after disconnection
   static void recoverSession() {
-    _sendMessageToServer('recoverSession', {});
+    if (currentGameSession != null) {
+      User.getInstance().then((user) =>
+          signIn(user.username, gameSessionId: currentGameSession.id));
+    }
   }
 }
 
 /// Exception use for prompt exceptions from server
-class ServerException implements Exception {
+class ServerError extends Error {
   String message;
-  ServerException(this.message);
+  ServerError(this.message);
+
+  @override
+  String toString() {
+    return 'Error from ws server: $message';
+  }
 }

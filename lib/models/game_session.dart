@@ -54,7 +54,7 @@ class PlayerDetails {
       {this.points = 0,
       this.whiteCardsChoose,
       this.whiteCardDeck,
-      this.hasSent}) {
+      this.hasSent = false}) {
     whiteCardsChoose = whiteCardsChoose == null ? [] : whiteCardsChoose;
   }
 

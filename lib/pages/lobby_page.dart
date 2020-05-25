@@ -2,11 +2,11 @@ import 'package:cah_common_values/enums/game_session_phase.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:projectcahfungame/game_session_manager.dart';
+import 'package:projectcahfungame/game_session_scaffold.dart';
 import 'package:projectcahfungame/models/game_session.dart';
 import 'package:projectcahfungame/pages/game_page.dart';
+import 'package:projectcahfungame/pages/login_page.dart';
 import 'package:projectcahfungame/session_data.dart';
-
-import '../main.dart';
 
 class LobbyPage extends StatefulWidget {
   @override
@@ -32,8 +32,12 @@ class LobbyPageState extends State<LobbyPage> {
             context, MaterialPageRoute(builder: (ctx) => GamePage()));
       }
     });
-    GameSessionManager.onDisconnect(() => Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (ctx) => MyHomePage())));
+    GameSessionManager.onDisconnect(() {
+      SessionData.setUser(null);
+
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (ctx) => LoginPage()));
+    });
   }
 
   @override
@@ -44,8 +48,9 @@ class LobbyPageState extends State<LobbyPage> {
     return FutureBuilder<String>(
       future: SessionData.getUser().then((user) => user.username),
       builder: (BuildContext context, AsyncSnapshot<String> snap) {
-        return Scaffold(
-          key: scaffoldKey,
+        return ScaffoldForSignedPlayers(
+          gameSession: gameSession,
+          clientUsername: snap?.data,
           body: Column(
             children: <Widget>[
               Padding(
@@ -89,14 +94,12 @@ class LobbyPageState extends State<LobbyPage> {
                                   ),
                                   onTap: () {
                                     Clipboard.setData(
-                                            ClipboardData(text: gameSession.id))
-                                        .then((value) {
-                                      scaffoldKey.currentState
-                                          .showSnackBar(SnackBar(
-                                        content:
-                                            Text('Codice sessione copiato'),
-                                      ));
-                                    });
+                                        ClipboardData(text: gameSession.id));
+
+                                    scaffoldKey.currentState
+                                        .showSnackBar(SnackBar(
+                                      content: Text('Codice sessione copiato'),
+                                    ));
                                   },
                                 ),
                               ),

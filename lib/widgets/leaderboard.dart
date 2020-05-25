@@ -7,12 +7,6 @@ class Leaderboard extends StatelessWidget {
   final String currentPlayerApplication;
   final Map<String, PlayerDetails> playersMap;
 
-  static const Icon _blackKingIcon = Icon(MaterialCommunityIcons.chess_king);
-  static const Icon _hasSentIcon = Icon(
-    MaterialCommunityIcons.check,
-    color: Colors.lightGreenAccent,
-  );
-
   const Leaderboard(
       {Key key,
       @required this.playersMap,
@@ -30,57 +24,91 @@ class Leaderboard extends StatelessWidget {
         return userPoints1.compareTo(userPoints2) * -1;
       });
 
+    var first5Players = playersOrderByScore.length > 5
+        ? playersOrderByScore.sublist(0, 5)
+        : playersOrderByScore;
+
+    var first5PlayerLabels =
+        first5Players.map((username) => _PlayerLeaderboardLabel(
+              username: username,
+              score: playersMap[username].points,
+              hasSent: playersMap[username].hasSent,
+              isBlackKing: blackKingPlayer == username,
+            ));
+
+    var clientPlayerLabel = _PlayerLeaderboardLabel(
+      username: currentPlayerApplication,
+      score: playersMap[currentPlayerApplication].points,
+      isBlackKing: blackKingPlayer == currentPlayerApplication,
+      hasSent: playersMap[currentPlayerApplication].hasSent,
+    );
+
     return Card(
-      child: Padding(
-        padding: EdgeInsets.all(10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              'Leaderboard',
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 17),
-            ),
-            ...playersOrderByScore.sublist(0, 5).map(createPlayerLabel),
-            Divider(
-              color: Colors.grey,
-              thickness: 5,
-            ),
-            createPlayerLabel(currentPlayerApplication)
-          ],
-        ),
-      ),
+      child: Container(
+          padding: EdgeInsets.all(10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Text(
+                'Leaderboard',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+              ),
+              ...first5PlayerLabels,
+              Visibility(
+                  visible: playersOrderByScore.length > 5,
+                  child: Divider(color: Colors.grey, thickness: 1)),
+              Visibility(
+                  visible: playersOrderByScore.length > 5,
+                  child: clientPlayerLabel),
+            ],
+          )),
     );
   }
+}
 
-  Widget createPlayerLabel(String username) {
-    double iconOpacity =
-        (playersMap[username].hasSent || blackKingPlayer == username) ? 1 : 0;
+class _PlayerLeaderboardLabel extends StatelessWidget {
+  final String username;
+  final int score;
+  final bool hasSent;
+  final bool isBlackKing;
 
-    var iconToShow =
-        blackKingPlayer == username ? _blackKingIcon : _hasSentIcon;
+  static const Icon _blackKingIcon = Icon(MaterialCommunityIcons.chess_king);
+  static const Icon _hasSentIcon = Icon(
+    MaterialCommunityIcons.check,
+    color: Colors.lightGreenAccent,
+  );
 
-    return Container(
-        padding: EdgeInsets.only(top: 10),
-        child: Row(
-          children: <Widget>[
-            Opacity(
-              opacity: iconOpacity,
-              child: Padding(
-                padding: EdgeInsets.only(right: 10),
-                child: iconToShow,
-              ),
-            ),
-            Text(username),
-            Padding(
-                padding: EdgeInsets.only(left: 10),
-                child: Text(
-                  playersMap[username].points.toString(),
-                  style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                      color: Colors.blue[700]),
-                ))
-          ],
-        ));
+  _PlayerLeaderboardLabel({
+    this.username = '',
+    this.score,
+    this.hasSent = false,
+    this.isBlackKing = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final Icon currentIcon = isBlackKing ? _blackKingIcon : _hasSentIcon;
+
+    return Row(
+      children: <Widget>[
+        Opacity(
+          opacity: hasSent || isBlackKing ? 1 : 0,
+          child: currentIcon,
+        ),
+        Expanded(
+          child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              child: Text(
+                username,
+                overflow: TextOverflow.ellipsis,
+              )),
+        ),
+        Text(
+          '$score',
+          style:
+              TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.w600),
+        )
+      ],
+    );
   }
 }

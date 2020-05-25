@@ -50,7 +50,7 @@ class SessionJoinController {
       var session = GameSessionController.getSessionByPlayerToken(userToken);
       session.playersDetailsMap[username].online = true;
 
-      var sessionEncoded = JsonEncoder().convert(session.toMap());
+      var sessionEncoded = jsonEncode(session);
       request.wsConnection.add(sessionEncoded);
     } catch (err) {
       print(

@@ -40,8 +40,9 @@ class GameCard extends StatelessWidget {
     }
 
     return GestureDetector(
-        onTap: onClick,
-        child: AspectRatio(
+      onTap: onClick,
+      onLongPress: () => showFullCardText(context),
+      child: AspectRatio(
           aspectRatio: 1,
           child: Container(
               padding: EdgeInsets.all(10),
@@ -57,33 +58,38 @@ class GameCard extends StatelessWidget {
                       blurRadius: 4,
                     )
                   ]),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  Text(
-                    !showCompletedBlackCard
-                        ? card.toString()
-                        : (card as cardModel.BlackCard)
-                            .compile(cardsForCompleteBlackCard)
-                            .toString(),
-                    textAlign: TextAlign.start,
-                    style: TextStyle(
-                        color: textColor,
-                        fontWeight: FontWeight.w500,
-                        fontSize: 15),
-                  ),
-                  Opacity(
-                    opacity: wordsRequired > 1 ? 1 : 0,
-                    child: Text('PICK $wordsRequired',
-                        textAlign: TextAlign.end,
-                        style: TextStyle(
-                            color: textColor,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 15)),
-                  )
-                ],
-              )),
-        ));
+              child: Text(
+                !showCompletedBlackCard
+                    ? card.toString()
+                    : (card as cardModel.BlackCard)
+                        .compile(cardsForCompleteBlackCard)
+                        .toString(),
+                textAlign: TextAlign.start,
+                maxLines: 10,
+                style: TextStyle(
+                    color: textColor,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 15),
+              ))),
+    );
+  }
+
+  void showFullCardText(BuildContext context) async {
+    await showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+              title: Text('Info carta'),
+              content: Text(!showCompletedBlackCard
+                  ? card.toString()
+                  : (card as cardModel.BlackCard)
+                      .compile(cardsForCompleteBlackCard)
+                      .toString()),
+              actions: <Widget>[
+                FlatButton(
+                  child: Text('OK CAPITO'),
+                  onPressed: () => Navigator.pop(context),
+                )
+              ],
+            ));
   }
 }

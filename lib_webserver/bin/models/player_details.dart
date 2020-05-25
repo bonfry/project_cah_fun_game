@@ -27,7 +27,7 @@ class PlayerDetails {
         whiteCardIdsSelected: wCardsSelected);
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return {
       'points': points,
       'has_sent': hasSent,

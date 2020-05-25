@@ -1,0 +1,7 @@
+name: cah_webserver
+version: 1.5.0+1
+
+dependencies:
+  uuid: ^2.0.4
+  cah_common_values:
+    path: ../lib_common

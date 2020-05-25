@@ -62,14 +62,10 @@ class GameSession {
         playersDetailsMap: playerDetailParsedMap);
   }
 
-  Map<String, dynamic> toMap() {
-    var playerMap = <String, dynamic>{};
-
-    playersDetailsMap.keys
-        .where((username) => playersDetailsMap[username].online)
-        .forEach((username) {
-      playerMap[username] = playersDetailsMap[username].toMap();
-    });
+  Map<String, dynamic> toJson() {
+    var playersDetailsFilteredMap = Map.fromEntries(playersDetailsMap.entries
+        .where((MapEntry<String, PlayerDetails> playerEntry) =>
+            playerEntry.value.online));
 
     return {
       'id': id,
@@ -77,7 +73,7 @@ class GameSession {
       'black_king': blackKing,
       'phase': phase.index,
       'cur_black_card_id': currentBlackCardId,
-      'players': playerMap,
+      'players': playersDetailsFilteredMap,
     };
   }
 

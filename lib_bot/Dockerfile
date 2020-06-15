@@ -7,11 +7,13 @@ COPY lib_common lib_common
 COPY lib_webserver lib_webserver
 
 WORKDIR /usr/src/app/cah_bot
-RUN pub get && pub get --offline && dart2native bin/main.dart -o ./bot_service
+RUN pub get && pub get --offline
+RUN dart2native bin/main.dart -o ./bot
 
-FROM debian:lastest
+FROM ubuntu:latest
 WORKDIR /usr/src/app
-COPY --from=dartbuild /usr/src/app/cah_bot/bot_service .
-COPY --from=dartbuild /usr/src/app/cah_bot/card_datasource ./card_datasource
+COPY --from=dartbuild /usr/src/app/cah_bot/bot .
+RUN mkdir card_datasource
+COPY card_datasource card_datasource
 
-CMD ['./bot_service']
+CMD ["./bot"]

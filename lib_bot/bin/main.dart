@@ -4,12 +4,11 @@ import 'dart:io';
 import 'package:cah_common_values/card.dart';
 
 import 'bot.dart';
-import 'bot_print_helper.dart';
 import 'card_controller.dart';
 
 const String HOSTNAME = 'cahbackend:4040';
 List<BlackCard> blackCards;
-Map<String, List<Bot>> botGroupedBySessionCode;
+Map<String, List<Bot>> botGroupedBySessionCode = {};
 
 void main() async {
   blackCards = CardController.loadBlackCards();
@@ -25,37 +24,38 @@ void main() async {
         Map<String, dynamic> jsonData;
         try {
           jsonData = jsonDecode(String.fromCharCodes(data));
+
+          if (RegExp(r'^\/api/create-bot').hasMatch(endpointPath)) {
+            createBot(jsonData);
+            req.response
+              ..statusCode = 200
+              ..write('{"success": true}')
+              ..close();
+          } else if (RegExp(r'^\/api/remove-bot').hasMatch(endpointPath)) {
+            removeBot(jsonData);
+            req.response
+              ..statusCode = 200
+              ..write('{"success": true}')
+              ..close();
+          } else {
+            req.response
+              ..statusCode = 404
+              ..write('{"error":"endpoint not found"}')
+              ..close();
+          }
         } catch (err) {
-          req
-            ..response.statusCode = 500
-            ..response.write('{"error":"body must be json"}');
-
-          return;
-        }
-
-        if (RegExp(r'^\/api/create-bot').hasMatch(endpointPath)) {
-          createBot(jsonData);
-          req
-            ..response.statusCode = 200
-            ..response.write('{"success": true}');
-        } else if (RegExp(r'^\/api/remove-bot').hasMatch(endpointPath)) {
-          removeBot(jsonData);
-          req
-            ..response.statusCode = 200
-            ..response.write('{"success": true}');
-        } else {
-          req
-            ..response.statusCode = 404
-            ..response.write('{"error":"endpoint not found"}');
+          req.response
+            ..statusCode = 500
+            ..write('{"error":"$err"}')
+            ..close();
         }
       });
     } else {
-      req
-        ..response.statusCode = 500
-        ..response.write('{"error":"endpoint must start with /api "}');
+      req.response
+        ..statusCode = 500
+        ..write('{"error":"endpoint must start with /api "}')
+        ..close();
     }
-
-    req.response.close();
   });
 }
 
@@ -76,12 +76,14 @@ void createBot(Map<String, dynamic> data) async {
         ? botGroupedBySessionCode[sessionToken].length + 1
         : 1;
 
-    var botHash = '${sessionToken}_$botId'.hashCode;
+    var botHash = '${sessionToken}_${botId}_${DateTime.now()}'.hashCode;
     var username = 'bot_$botHash';
 
     try {
       WebSocket socket = await WebSocket.connect('ws://$HOSTNAME/ws');
-      var bot = Bot(username, socket)..init(sessionToken);
+      var bot = Bot(username, socket);
+
+      bot.init(sessionToken);
 
       if (botGroupedBySessionCode.containsKey(sessionToken)) {
         botGroupedBySessionCode[sessionToken].add(bot);
@@ -89,8 +91,7 @@ void createBot(Map<String, dynamic> data) async {
         botGroupedBySessionCode[sessionToken] = [bot];
       }
     } catch (err) {
-      printBotError(err.toString());
-      return;
+      print(err);
     }
   }
 }

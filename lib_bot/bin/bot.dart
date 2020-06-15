@@ -48,6 +48,10 @@ class Bot {
       return;
     }
 
+    if (json.containsKey('error')) {
+      logout();
+    }
+
     var session = GameSession.parseMap(json);
 
     if (session.phase == GameSessionPhase.START_TURN &&

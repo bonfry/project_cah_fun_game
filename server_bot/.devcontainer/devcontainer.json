@@ -1,0 +1,12 @@
+{
+    "name": "CAH Bot Server",
+    "dockerComposeFile": [
+        "../../dev.compose.yaml"
+    ],
+    "service": "bot-server",
+    "shutdownAction": "none",
+    "extensions": [
+        "dart-code.dart-code"
+    ],
+    "workspaceFolder": "/workspace/server_bot"
+}

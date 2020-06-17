@@ -1,0 +1,12 @@
+{
+    "name": "CAH Web Server",
+    "dockerComposeFile": [
+        "../../dev.compose.yaml"
+    ],
+    "service": "web-server",
+    "shutdownAction": "none",
+    "extensions": [
+        "dart-code.dart-code"
+    ],
+    "workspaceFolder": "/workspace/server_web"
+}

@@ -1,0 +1,13 @@
+{
+    "name": "CAH Flutter Frontend",
+    "dockerComposeFile": [
+        "../../dev.compose.yaml"
+    ],
+    "service": "app-frontend",
+    "shutdownAction": "none",
+    "extensions": [
+        "dart-code.flutter",
+        "dart-code.dart-code"
+    ],
+    "workspaceFolder": "/workspace/app_frontend"
+}

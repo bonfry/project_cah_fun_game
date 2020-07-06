@@ -1,12 +1,13 @@
 {
     "name": "CAH Web Server",
     "dockerComposeFile": [
-        "../../dev.compose.yaml"
+        "../../devremote.compose.yaml"
     ],
     "service": "web-server",
     "shutdownAction": "none",
     "extensions": [
         "dart-code.dart-code"
     ],
-    "workspaceFolder": "/workspace/server_web"
+    "workspaceFolder": "/workspace",
+    "workspaceMount": "source=remote-workspace,target=/workspace,type=volume"
 }

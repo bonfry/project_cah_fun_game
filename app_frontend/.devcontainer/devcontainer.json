@@ -1,7 +1,7 @@
 {
     "name": "CAH Flutter Frontend",
     "dockerComposeFile": [
-        "../../dev.compose.yaml"
+        "../../devremote.compose.yaml"
     ],
     "service": "app-frontend",
     "shutdownAction": "none",
@@ -9,5 +9,6 @@
         "dart-code.flutter",
         "dart-code.dart-code"
     ],
-    "workspaceFolder": "/workspace/app_frontend"
+    "workspaceFolder": "/workspace",
+    "workspaceMount": "source=remote-workspace,target=/workspace,type=volume"
 }

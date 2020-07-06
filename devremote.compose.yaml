@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: app_frontend/dev.Dockerfile
     volumes:
-      - .:/workspace:cached
+      - remote-workspace:/workspace
 
     command: /bin/sh -c "while sleep 1000; do :; done"
     links:
@@ -31,7 +31,7 @@ services:
     image: google/dart:latest
     volumes:
       # Mount the root folder that contains .git
-      - .:/workspace:cached
+      - remote-workspace:/workspace
     command: /bin/sh -c "while sleep 1000; do :; done"
     links:
       - web-server
@@ -44,7 +44,10 @@ services:
     image: google/dart:latest
     volumes:
       # Mount the root folder that contains .git
-      - .:/workspace:cached
+      - remote-workspace:/workspace
     command: /bin/sh -c "while sleep 1000; do :; done"
     ports:
       - 4040:4040
+volumes:
+  remote-workspace:
+    

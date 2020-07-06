@@ -1,12 +1,13 @@
 {
     "name": "CAH Bot Server",
     "dockerComposeFile": [
-        "../../dev.compose.yaml"
+        "../../devremote.compose.yaml"
     ],
     "service": "bot-server",
     "shutdownAction": "none",
     "extensions": [
         "dart-code.dart-code"
     ],
-    "workspaceFolder": "/workspace/server_bot"
+    "workspaceFolder": "/workspace",
+    "workspaceMount": "source=remote-workspace,target=/workspace,type=volume"
 }

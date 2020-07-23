@@ -6,21 +6,25 @@ import 'package:cah_common_values/card.dart';
 import 'bot.dart';
 import 'card_controller.dart';
 
-const String HOSTNAME = 'cahbackend:4040';
+const String HOSTNAME = 'web-server:4040';
+
 List<BlackCard> blackCards;
 Map<String, List<Bot>> botGroupedBySessionCode = {};
 
 void main() async {
   blackCards = CardController.loadBlackCards();
   var httpServer = await HttpServer.bind(
-      InternetAddress.anyIPv4, //'0.0.0.0',
+      '0.0.0.0', //'0.0.0.0',
       4041);
 
   httpServer.listen((HttpRequest req) {
     var endpointPath = req.uri.path;
-
+    
     if (RegExp(r'^\/api.*').hasMatch(endpointPath)) {
       req.listen((data) {
+        
+        req.response.headers.add('Access-Control-Allow-Origin', '*');
+
         Map<String, dynamic> jsonData;
         try {
           jsonData = jsonDecode(String.fromCharCodes(data));

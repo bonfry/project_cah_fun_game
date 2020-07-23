@@ -13,7 +13,7 @@ import 'package:projectcahfungame/session_data.dart';
 typedef void OnGameSessionUpdate(GameSession session);
 
 //Tmp hostname variable
-const String HOSTNAME = 'localhost:5000';
+const String HOSTNAME = 'docktest.westeurope.cloudapp.azure.com:5000';
 
 /// Static class for manage the communication between client and server
 class GameSessionManager {
@@ -21,7 +21,7 @@ class GameSessionManager {
   static GameSession currentGameSession;
   static WebSocket _socketChannel;
   static OnGameSessionUpdate _onSessionUpdate;
-  static Function _onSocketDisconnection;
+  static Function _onSocketDisconnection = (){};
   static Function _onSocketConnection = () {};
   static Function _onSocketReconnection = () {};
 
@@ -47,6 +47,8 @@ class GameSessionManager {
     _socketChannel.onMessage.listen((messageEvent) {
       if (messageEvent.data == 'disconected') {
         return _onSocketDisconnection();
+      }else if(messageEvent.data == 'ping'){
+        return pingServer();
       }
 
       var socketResponse = jsonDecode(messageEvent.data);
@@ -68,36 +70,45 @@ class GameSessionManager {
 
   ///Sets up socket closing event listeners
   static void _setUpSocketDisconnection() {
-    _socketChannel.onClose.listen((event) {
-      //TODO: Gestire riconnessione al server
-      _tryToReconnect().then((ws) {
-        _socketChannel = ws;
+    _socketChannel.onClose.listen((event) async{
+
+      _onSocketDisconnection();
+
+      int trials = 0;
+      WebSocket newWsConnection;
+      
+      while(trials < 5){
+        try{
+          newWsConnection = await _tryToReconnect();
+          break;
+        }catch(e){
+          trials++;
+          await Future.delayed(Duration(seconds: 30));
+        }
+      }
+
+      if(newWsConnection != null){
+        _socketChannel = newWsConnection;
         _setUpSocketListener();
         _setUpSocketDisconnection();
         _onSocketReconnection();
-      });
+        recoverSession();
+      }
     });
   }
 
   /// Try to reconnect after WebSocket disconnection for 3 times
-  static Future<WebSocket> _tryToReconnect({int times = 0}) async {
+  static Future<WebSocket> _tryToReconnect() async {
     var _completer = Completer<WebSocket>();
-
-    print('Tentativo n° $times');
 
     var newWebSocketConnection = WebSocket('ws://$HOSTNAME/ws');
 
     newWebSocketConnection.onOpen.listen((event) {
-      print(' LA MADONNA SI E\' CONNESSA');
       _completer.complete(newWebSocketConnection);
     });
+
     newWebSocketConnection.onError.listen((event) {
-      print('PORCO DIO BONO');
-      if (times == 3) {
-        throw new Exception('No connection');
-      } else {
-        return _tryToReconnect(times: times + 1);
-      }
+      _completer.completeError(Exception("I can't connect to server"));
     });
 
     return _completer.future;
@@ -116,6 +127,14 @@ class GameSessionManager {
   /// Save callback for socket connection on the manager
   static void onConnection(Function onConnect) {
     _onSocketConnection = onConnect;
+  }
+
+  static void onSocketDisconnection(Function onSockDisc){
+    _onSocketDisconnection = onSockDisc;
+  }
+
+  static void onSocketReconnection(Function onSockReconn){
+    _onSocketReconnection = onSockReconn;
   }
 
   /// Sign in to server and create or join to a server
@@ -184,9 +203,20 @@ class GameSessionManager {
   /// Try to recover current session after disconnection
   static void recoverSession() {
     if (currentGameSession != null) {
-      User.getInstance().then((user) =>
-          signIn(user.username, gameSessionId: currentGameSession.id));
+      _sendMessageToServer(RequestName.RECOVER_SESSION_REQUEST, {});
     }
+  }
+
+  ///Ping the server for maintaining the web socket connection
+  static void pingServer() {
+    _socketChannel.send('pong');
+  }
+
+  static Future addBot(String sessionToken, int botQuantity) async {
+    return HttpRequest.request('http://$HOSTNAME/bot/create-bot',
+        method: 'POST',
+        sendData: jsonEncode(
+            {'session_token': sessionToken, 'quantity': botQuantity}));
   }
 }
 

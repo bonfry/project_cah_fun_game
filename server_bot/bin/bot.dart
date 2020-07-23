@@ -15,6 +15,7 @@ class Bot {
   final String username;
   final WebSocket socket;
   String userToken;
+  GameSession gameSession;
 
   bool _isChoosing = false;
 
@@ -38,6 +39,11 @@ class Bot {
   void _manageMessage(data) {
     if (data == 'disconected') {
       return;
+    } else if (data == 'ping') {
+      socket.add('pong');
+      return;
+    }else if (data == 'send_data' && gameSession.phase == GameSessionPhase.START_TURN){
+      return chooseAndSendWhiteCards();
     }
 
     Map<String, dynamic> json = jsonDecode(data);
@@ -52,37 +58,12 @@ class Bot {
       logout();
     }
 
-    var session = GameSession.parseMap(json);
+    gameSession = GameSession.parseMap(json);
 
-    if (session.phase == GameSessionPhase.START_TURN &&
-        !session.playersDetailsMap[username].hasSent &&
-        !_isChoosing) {
-      _isChoosing = true;
-      int whiteCardCount =
-          session.playersDetailsMap[username].whiteCardIdsOnHand.length;
-      var blackCard =
-          blackCards.firstWhere((c) => c.id == session.currentBlackCardId);
-      var whiteCardsNeeded = '<*>'.allMatches(blackCard.text).length;
-      var outputWhiteCards = <String>[];
-
-      while (outputWhiteCards.length < whiteCardsNeeded) {
-        var randomCardIndex = randomGenerator.nextInt(whiteCardCount - 1);
-        var whiteRandomCard = session
-            .playersDetailsMap[username].whiteCardIdsOnHand
-            .removeAt(randomCardIndex);
-
-        outputWhiteCards.add(whiteRandomCard);
-      }
-
-      var request = Request(RequestName.SEND_WHITE_CARDS_REQUEST,
-          {'white_card_indexes': outputWhiteCards, 'user_token': userToken});
-
-      socket.add(request.toString());
-      _isChoosing = false;
-    } else if (session.phase == GameSessionPhase.CHOICE_BLACK &&
-        session.blackKing == username) {
-      var usersToChoice = session.playersDetailsMap.keys
-          .where((_username) => _username != session.blackKing);
+    if (gameSession.phase == GameSessionPhase.CHOICE_BLACK &&
+        gameSession.blackKing == username) {
+      var usersToChoice = gameSession.playersDetailsMap.keys
+          .where((_username) => _username != gameSession.blackKing);
 
       var randomUserIndex = usersToChoice.length == 1
           ? 0
@@ -93,12 +74,35 @@ class Bot {
         'user_token': userToken
       });
 
-      Future.delayed(Duration(minutes: 1))
+      Future.delayed(Duration(seconds: 50))
           .then((value) => socket.add(request.toString()));
     }
   }
 
   void logout() async {
     socket.close();
+  }
+
+  void chooseAndSendWhiteCards(){
+    int whiteCardCount =
+          gameSession.playersDetailsMap[username].whiteCardIdsOnHand.length;
+      var blackCard =
+          blackCards.firstWhere((c) => c.id == gameSession.currentBlackCardId);
+      var whiteCardsNeeded = '<*>'.allMatches(blackCard.text).length;
+      var outputWhiteCards = <String>[];
+
+      while (outputWhiteCards.length < whiteCardsNeeded) {
+        var randomCardIndex = randomGenerator.nextInt(whiteCardCount - 1);
+        var whiteRandomCard = gameSession
+            .playersDetailsMap[username].whiteCardIdsOnHand
+            .removeAt(randomCardIndex);
+
+        outputWhiteCards.add(whiteRandomCard);
+      }
+
+      var request = Request(RequestName.SEND_WHITE_CARDS_REQUEST,
+          {'white_card_indexes': outputWhiteCards, 'user_token': userToken});
+
+      socket.add(request.toString());
   }
 }

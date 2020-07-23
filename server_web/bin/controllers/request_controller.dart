@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cah_common_values/enums/game_session_phase.dart';
 import 'package:cah_common_values/request.dart';
 import 'package:cah_common_values/request_name.dart';
 
@@ -43,6 +44,12 @@ class RequestController {
     }
 
     broadcastResponse(gameSessionToBroadcast);
+
+    if (gameSessionToBroadcast.phase == GameSessionPhase.START_TURN &&
+        GameSessionController.checkIfAllRealPlayersSentWhiteCards(gameSessionToBroadcast)) {
+      GameSessionController.allowNextBotToSendWhiteCards(
+          gameSessionToBroadcast);
+    }
   }
 
   /// Send new game session to other clients in the same session

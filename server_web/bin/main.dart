@@ -6,6 +6,7 @@ import 'controllers/card_controller.dart';
 import 'controllers/game_session_controller.dart';
 import 'controllers/request_controller.dart';
 import 'models/file_extension.dart';
+import 'ping_manager.dart';
 import 'sever_data.dart';
 
 void main() {
@@ -13,6 +14,7 @@ void main() {
 
   HttpServer.bind('0.0.0.0', 4040).then((HttpServer server) {
     print('[+]WebSocket listening at -- ws://localhost:4040');
+    PingManager.initAutomaticPing();
     server.listen((HttpRequest request) {
       if (request.uri.path.contains('getCards')) {
         return manageCardRequest(request);
@@ -22,6 +24,9 @@ void main() {
             try {
               if (data.runtimeType != String) {
                 throw Exception('Data must be a JSON string');
+              }
+              else if(data == 'pong'){
+               return; // print('pong');
               }
 
               RequestController.parseRequest(data, socket);

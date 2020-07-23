@@ -4,11 +4,20 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
             "name": "Flutter",
             "type": "dart",
             "request": "launch",
-            "program": "lib/main.dart"
+            "program": "lib/main.dart",
+            //"args": ["--verbose","--web-hostname","0.0.0.0","--web-port","34315"]
+        },
+        {
+            "name": "Flutter Remote",
+            "type": "dart",
+            "request": "launch",
+            "program": "lib/main.dart",
+            "args": ["--web-hostname","0.0.0.0","--web-port","34315"]
         },
         {
             "name": "Dart",

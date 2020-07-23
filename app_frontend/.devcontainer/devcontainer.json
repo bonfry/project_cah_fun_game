@@ -9,6 +9,6 @@
         "dart-code.flutter",
         "dart-code.dart-code"
     ],
-    "workspaceFolder": "/workspace",
-    "workspaceMount": "source=remote-workspace,target=/workspace,type=volume"
+    "workspaceFolder": "/workspace/app_frontend",
+    "workspaceMount": "source=/home/docker-user/project_cah_fun_game,target=/workspace,type=bind,consistency=cached"
 }

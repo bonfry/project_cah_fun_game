@@ -11,4 +11,6 @@ WORKDIR /home/developer
 RUN git clone https://github.com/flutter/flutter.git -b beta
 ENV PATH "$PATH:/home/developer/flutter/bin"
 
-RUN flutter config --enable-web && flutter doctor
+RUN flutter config --enable-web && \ 
+    flutter pub global activate devtools && \ 
+    flutter doctor

@@ -5,33 +5,32 @@ services:
       context: .
       dockerfile: app_frontend/dev.Dockerfile
     volumes:
-      - remote-workspace:/workspace
-
+      - /home/docker-user/project_cah_fun_game:/workspace:cached
     command: /bin/sh -c "while sleep 1000; do :; done"
+    ports:
+      - 34315:34315
     links:
       - bot-server
       - web-server
-
     depends_on:
       - bot-server
       - web-server
   proxy-server:  
-      image: nginx:latest
-      ports:
-        - 5000:80
-      volumes:
-        - ./default.conf:/etc/nginx/conf.d/default.conf:ro
-      links:
-      - bot-server
-      - web-server
+    image: nginx:latest
+    ports:
+      - 5000:80
+    volumes:
+      - /home/docker-user/project_cah_fun_game/default.conf:/etc/nginx/conf.d/default.conf:ro
+    links:
+    - bot-server
+    - web-server
     depends_on:
       - bot-server
       - web-server
   bot-server:
     image: google/dart:latest
     volumes:
-      # Mount the root folder that contains .git
-      - remote-workspace:/workspace
+      - /home/docker-user/project_cah_fun_game:/workspace:cached
     command: /bin/sh -c "while sleep 1000; do :; done"
     links:
       - web-server
@@ -39,15 +38,11 @@ services:
       - 4041:4041
     depends_on:
       - web-server
-  
   web-server:
     image: google/dart:latest
     volumes:
       # Mount the root folder that contains .git
-      - remote-workspace:/workspace
+      - /home/docker-user/project_cah_fun_game:/workspace:cached
     command: /bin/sh -c "while sleep 1000; do :; done"
     ports:
       - 4040:4040
-volumes:
-  remote-workspace:
-    

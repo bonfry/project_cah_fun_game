@@ -19,20 +19,56 @@ class GameSessionController {
       ..whiteCardIdsSelected = whiteCardsIds
       ..hasSent = true;
 
-    var playersWhoSentWhiteCards =
-        gameSession.playersDetailsMap.keys.where((_username) {
-      var hasSent = gameSession.playersDetailsMap[_username].hasSent;
-      var isBlackKing = gameSession.blackKing == _username;
-
-      return hasSent || isBlackKing;
-    }).length;
-
-    if (playersWhoSentWhiteCards ==
-        gameSession.playersDetailsMap.values.length) {
+    if (_checkIfAllPlayersHaveSent(gameSession)) {
       gameSession.phase = GameSessionPhase.CHOICE_BLACK;
     }
 
     return gameSession;
+  }
+
+  static bool checkIfAllRealPlayersSentWhiteCards(GameSession gameSession) {
+    var realPlayers = gameSession.playersDetailsMap.entries
+        .where((playerEntry) =>
+            !RegExp(r"bot_.*").hasMatch(playerEntry.key) &&
+            playerEntry.value.online)
+        .toList();
+
+    var realPlayersWhoSentWhiteCardsCount = realPlayers.where((playerEntry) {
+      var hasSent = playerEntry.value.hasSent;
+      var isBlackKing = gameSession.blackKing == playerEntry.key;
+
+      return hasSent || isBlackKing;
+    }).toList().length;
+
+    return realPlayersWhoSentWhiteCardsCount == realPlayers.length;
+  }
+
+  static bool _checkIfAllPlayersHaveSent(GameSession gameSession) {
+    var onlinePlayersUsername = gameSession.playersDetailsMap.entries
+        .where((playerEntry) => playerEntry.value.online);
+
+    var playersWhoSentWhiteCardCount = onlinePlayersUsername.where((playerEntry) {
+      var hasSent = playerEntry.value.hasSent;
+      var isBlackKing = gameSession.blackKing == playerEntry.key;
+
+      return hasSent || isBlackKing;
+    }).length;
+
+    return playersWhoSentWhiteCardCount == onlinePlayersUsername.length;
+  }
+
+  static void allowNextBotToSendWhiteCards(GameSession gameSession) {
+    var nextBotUsername = gameSession.playersDetailsMap.entries
+        .where((playerEntry) =>
+            RegExp(r"bot_.*").hasMatch(playerEntry.key) &&
+            playerEntry.value.online &&
+            !playerEntry.value.hasSent &&
+            gameSession.blackKing != playerEntry.key)
+        .first
+        ?.key;
+    if (ServerData.userConnections.containsKey(nextBotUsername)) {
+      ServerData.userConnections[nextBotUsername].socket.add('send_data');
+    }
   }
 
   static GameSession initGame(Request request) {
@@ -114,6 +150,7 @@ class GameSessionController {
     if (session.blackCardIdIterator.moveNext()) {
       session.currentBlackCardId = session.blackCardIdIterator.current;
       session.phase = GameSessionPhase.START_TURN;
+
     } else {
       session.phase = GameSessionPhase.FINISH_GAME;
     }

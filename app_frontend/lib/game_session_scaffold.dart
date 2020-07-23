@@ -13,6 +13,7 @@ class ScaffoldForSignedPlayers extends StatelessWidget {
   final GameSession gameSession;
   final String clientUsername;
   final Widget appBarLeading;
+  final _scaffoldKeyState = GlobalKey<ScaffoldState>();
 
   ScaffoldForSignedPlayers(
       {Key key,
@@ -25,7 +26,6 @@ class ScaffoldForSignedPlayers extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var width = MediaQuery.of(context).size.width;
-    var _scaffoldKeyState = GlobalKey<ScaffoldState>();
 
     bool isHost = gameSession.host == clientUsername;
 
@@ -67,6 +67,7 @@ class ScaffoldForSignedPlayers extends StatelessWidget {
                     child: BotManagerActionButton(
                       context: context,
                       buttonType: ActionButtonType.IconButton,
+                      sessionToken: gameSession.id,
                     ),
                   )
                 ]
@@ -125,6 +126,7 @@ class ScaffoldForSignedPlayers extends StatelessWidget {
                 Visibility(
                   visible: isHost,
                   child: BotManagerActionButton(
+                    sessionToken: gameSession.id,
                     context: context,
                     buttonType: ActionButtonType.ListTile,
                   ),

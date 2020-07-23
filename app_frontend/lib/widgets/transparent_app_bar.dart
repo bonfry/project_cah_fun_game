@@ -36,7 +36,8 @@ class KickPlayerActionButton extends StatelessWidget {
       @required this.buttonType,
       @required this.context,
       @required this.playerUsernames,
-      @required this.clientUsername})
+      @required this.clientUsername, 
+      })
       : super(key: key);
 
   @override
@@ -234,11 +235,12 @@ class GameRulesActionButton extends StatelessWidget {
 class BotManagerActionButton extends StatelessWidget {
   final BuildContext context;
   final ActionButtonType buttonType;
+    final String sessionToken;
   final TextStyle titleStyle =
       const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, height: 2);
 
   const BotManagerActionButton(
-      {Key key, @required this.context, @required this.buttonType})
+      {Key key, @required this.context, @required this.buttonType, @required this.sessionToken,})
       : super(key: key);
 
   @override
@@ -247,14 +249,14 @@ class BotManagerActionButton extends StatelessWidget {
 
     if (buttonType == ActionButtonType.IconButton) {
       widgetToRender = IconButton(
-        tooltip: 'Regole del gioco',
+        tooltip: 'Aggiungi bot',
         icon: Icon(MaterialCommunityIcons.robot),
         onPressed: showBotGenerationModal,
       );
     } else if (buttonType == ActionButtonType.ListTile) {
       widgetToRender = ListTile(
         leading: Icon(MaterialCommunityIcons.robot),
-        title: Text('Regole del gioco'),
+        title: Text('Aggiungi bot'),
         onTap: showBotGenerationModal,
       );
     }
@@ -278,7 +280,7 @@ class BotManagerActionButton extends StatelessWidget {
                   },
                   decoration: InputDecoration(
                       contentPadding: EdgeInsets.symmetric(horizontal: 15),
-                      labelText: 'Codice sessione',
+                      labelText: 'Numero bot da generare',
                       border: OutlineInputBorder()),
                 ),
               ),
@@ -288,6 +290,7 @@ class BotManagerActionButton extends StatelessWidget {
                   onPressed: () async {
                     formState.currentState.save();
                     print('Devo aggiungere $botCount bot');
+                    GameSessionManager.addBot(this.sessionToken, botCount).then((value) => Navigator.pop(context));
                   },
                 ),
                 FlatButton(

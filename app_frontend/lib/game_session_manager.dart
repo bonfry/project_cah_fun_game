@@ -20,10 +20,19 @@ class GameSessionManager {
   static bool isConnectedToServer = false;
   static GameSession currentGameSession;
   static WebSocket _socketChannel;
-  static OnGameSessionUpdate _onSessionUpdate;
-  static Function _onSocketDisconnection = (){};
-  static Function _onSocketConnection = () {};
-  static Function _onSocketReconnection = () {};
+
+  static StreamController<GameSession> _onSessionUpdateStreamController =
+      StreamController<GameSession>.broadcast();
+  static StreamController<MessageEvent> _onSessionCloseStreamController =
+      StreamController<MessageEvent>.broadcast();
+  static StreamController<CloseEvent> _onConnectionCloseStreamController =
+      StreamController<CloseEvent>.broadcast();
+  static StreamController<Event> _onConnectionStreamController =
+      StreamController<Event>.broadcast();
+  static StreamController<CloseEvent> _onConnectionLostStreamController =
+      StreamController<CloseEvent>.broadcast();
+  static StreamController<MessageEvent> _onConnectionRecoveredStreamController =
+      StreamController<MessageEvent>.broadcast();
 
   ///Init the WebSocket connection and set up its listeners
   static void init() {
@@ -37,18 +46,36 @@ class GameSessionManager {
     _setUpSocketDisconnection();
   }
 
+  static Stream<GameSession> get onSessionUpdate => _onSessionUpdateStreamController.stream;
+
+  static Stream<MessageEvent> get onSessionClose => _onSessionCloseStreamController.stream;
+
+  static Stream<Event> get onConnection => _onConnectionStreamController.stream;
+
+  static Stream<CloseEvent> get onConnectionLost => _onConnectionLostStreamController.stream;
+
+  static Stream<MessageEvent> get onConnectionRecoverd => _onConnectionRecoveredStreamController.stream;
+
+  static Stream<CloseEvent> get onConnectionClose => _onConnectionCloseStreamController.stream;
+
   ///Sets up socket opening event listeners
   static void _setUpSocketListener() {
     _socketChannel.onOpen.listen((event) {
       isConnectedToServer = true;
-      _onSocketConnection();
+      _onConnectionStreamController.add(event);
     });
 
     _socketChannel.onMessage.listen((messageEvent) {
       if (messageEvent.data == 'disconected') {
-        return _onSocketDisconnection();
-      }else if(messageEvent.data == 'ping'){
-        return pingServer();
+        return _onSessionCloseStreamController.add(messageEvent);
+      } else if (messageEvent.data == 'ping') {
+        User.getInstance().then((user) {
+          if (user != null) {
+            pingServer();
+          }
+        });
+
+        return;
       }
 
       var socketResponse = jsonDecode(messageEvent.data);
@@ -63,36 +90,37 @@ class GameSessionManager {
         throw ServerError(socketResponse['error']);
       } else {
         currentGameSession = GameSession.fromJson(socketResponse);
-        _onSessionUpdate(currentGameSession);
+        _onSessionUpdateStreamController.add(currentGameSession);
       }
     });
   }
 
   ///Sets up socket closing event listeners
   static void _setUpSocketDisconnection() {
-    _socketChannel.onClose.listen((event) async{
-
-      _onSocketDisconnection();
+    _socketChannel.onClose.listen((event) async {
+      _onConnectionLostStreamController.add(event);
 
       int trials = 0;
       WebSocket newWsConnection;
-      
-      while(trials < 5){
-        try{
+
+      while (trials < 5) {
+        try {
           newWsConnection = await _tryToReconnect();
           break;
-        }catch(e){
+        } catch (e) {
           trials++;
           await Future.delayed(Duration(seconds: 30));
         }
       }
 
-      if(newWsConnection != null){
+      if (newWsConnection != null) {
         _socketChannel = newWsConnection;
         _setUpSocketListener();
         _setUpSocketDisconnection();
-        _onSocketReconnection();
+        _onConnectionRecoveredStreamController.add(await _onConnectionStreamController.stream.last);
         recoverSession();
+      }else{
+        _onConnectionCloseStreamController.add(event);
       }
     });
   }
@@ -114,27 +142,20 @@ class GameSessionManager {
     return _completer.future;
   }
 
-  /// Save [OnGameSessionUpdate] callback on the manager
-  static void onUpdate(OnGameSessionUpdate callback) {
-    _onSessionUpdate = callback;
-  }
+  static StreamController<void> _disposeController = StreamController<void>();
 
-  /// Save callback for socket disconnection on the manager
-  static void onDisconnect(Function onDisconnect) {
-    _onSocketDisconnection = onDisconnect;
-  }
+  static Stream<void> get _onDispose => _disposeController.stream;
 
-  /// Save callback for socket connection on the manager
-  static void onConnection(Function onConnect) {
-    _onSocketConnection = onConnect;
-  }
+  static void dispose() {
+    _onConnectionCloseStreamController.close();
+    _onConnectionLostStreamController.close();
+    _onConnectionStreamController.close();
+    _onConnectionRecoveredStreamController.close();
+    _onSessionUpdateStreamController.close();
+    _onSessionCloseStreamController.close();
 
-  static void onSocketDisconnection(Function onSockDisc){
-    _onSocketDisconnection = onSockDisc;
-  }
-
-  static void onSocketReconnection(Function onSockReconn){
-    _onSocketReconnection = onSockReconn;
+    _disposeController.add(null);
+    _disposeController.close();
   }
 
   /// Sign in to server and create or join to a server

@@ -1,57 +1,29 @@
-import 'package:cah_common_values/enums/game_session_phase.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:projectcahfungame/game_session_manager.dart';
 import 'package:projectcahfungame/game_session_scaffold.dart';
 import 'package:projectcahfungame/models/game_session.dart';
-import 'package:projectcahfungame/pages/game_page.dart';
-import 'package:projectcahfungame/pages/login_page.dart';
 import 'package:projectcahfungame/session_data.dart';
-import 'package:projectcahfungame/widgets/reconnection_warning_dialog.dart';
 
 class LobbyPage extends StatefulWidget {
+  static const String route = '/lobby';
+  final GameSession gameSession;
+
+  const LobbyPage({Key key,@required this.gameSession}) : super(key: key);
+
   @override
-  LobbyPageState createState() => LobbyPageState();
+  LobbyPageState createState() => LobbyPageState(gameSession);
 }
 
 class LobbyPageState extends State<LobbyPage> {
-  GameSession gameSession;
+  final GameSession gameSession;
   GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
-  @override
-  void initState() {
-    super.initState();
-    gameSession = GameSessionManager.currentGameSession;
-
-    GameSessionManager.onUpdate((GameSession session) {
-      if (session.gamePhase == GameSessionPhase.LOBBY ||
-          session.gamePhase == GameSessionPhase.FINISH_GAME) {
-        setState(() {
-          gameSession = session;
-        });
-      } else if (session.gamePhase == GameSessionPhase.START_GAME ||
-          session.gamePhase == GameSessionPhase.START_TURN) {
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (ctx) => GamePage()));
-      }
-    });
-    GameSessionManager.onDisconnect(() {
-      SessionData.setUser(null);
-
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (ctx) => LoginPage()));
-    });
-
-    GameSessionManager.onSocketDisconnection((){
-      showDialog(context: context,builder: (context) => ReconnectionWarningDialog(),);
-    });
-    GameSessionManager.onSocketReconnection(() => Navigator.pop(context));
-  }
+  LobbyPageState(this.gameSession);
 
   @override
   Widget build(BuildContext context) {
     var userNameList = gameSession.playersDetailMap.keys.toList();
-    
 
     return FutureBuilder<String>(
       future: SessionData.getUser().then((user) => user.username),

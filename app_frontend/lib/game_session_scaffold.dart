@@ -33,6 +33,7 @@ class ScaffoldForSignedPlayers extends StatelessWidget {
       key: _scaffoldKeyState,
       appBar: TransparentAppBar(
           title: appBarLeading,
+          leading: Container(),
           actions: width > mediumScreenWidth
               ? <Widget>[
                   GameRulesActionButton(

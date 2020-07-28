@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:howler/howler.dart';
 
 class WinnerPage extends StatefulWidget {
+  static const String route = '/win';
+
   @override
   WinnerPageState createState() => WinnerPageState();
 }
@@ -52,9 +54,7 @@ class WinnerPageState extends State<WinnerPage> {
               child: RaisedButton(
                 child: Text('Torna alla lobby'),
                 onPressed: () {
-                  Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (ctx) => LobbyPage()));
-                },
+                 Navigator.pushReplacementNamed(context, LobbyPage.route);},
               ))
         ],
       ),

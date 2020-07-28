@@ -5,7 +5,6 @@ import 'package:cah_common_values/enums/game_session_phase.dart';
 import 'package:flutter/material.dart';
 import 'package:projectcahfungame/game_session_manager.dart';
 import 'package:projectcahfungame/models/game_session.dart';
-import 'package:projectcahfungame/pages/login_page.dart';
 import 'package:projectcahfungame/pages/winner_page.dart';
 import 'package:projectcahfungame/widgets/game_card.dart';
 import 'package:projectcahfungame/widgets/leaderboard.dart';
@@ -15,15 +14,18 @@ import '../game_session_scaffold.dart';
 import '../session_data.dart';
 
 class GamePage extends StatefulWidget {
-  const GamePage({Key key}) : super(key: key);
+  static const String route = '/game';
+  final GameSession gameSession;
+
+  const GamePage({Key key, @required this.gameSession}) : super(key: key);
 
   @override
-  GamePageState createState() => GamePageState();
+  GamePageState createState() => GamePageState(gameSession);
 }
 
 class GamePageState extends State<GamePage> {
   //Game info
-  GameSession gameSession;
+  final GameSession gameSession;
   String clientUsername;
   int _maxWhiteCardsSelected;
   cardModels.BlackCard blackCardChoose;
@@ -38,92 +40,80 @@ class GamePageState extends State<GamePage> {
   double width = 0;
   double mediumScreenWidth = 768;
 
-  @override
-  void initState() {
-    super.initState();
+  GamePageState(this.gameSession);
 
-    SessionData.getUser();
+  Future initGameVariables() async {
 
-    gameSession = GameSessionManager.currentGameSession;
     blackCardChoose = gameSession.currentBlackCard;
 
-    SessionData.getUser().then((user) {
-      clientUsername = user.username;
-      setState(() {
-        isBlackKing = gameSession.blackKing == clientUsername;
-        _maxWhiteCardsSelected = '<*>'.allMatches(blackCardChoose.text).length;
-        whiteCards = gameSession.playersDetailMap[user.username].whiteCardDeck;
-      });
-    });
+    var user = await SessionData.getUser();
+    clientUsername = user.username;
+    isBlackKing = gameSession.blackKing == clientUsername;
+    _maxWhiteCardsSelected = '<*>'.allMatches(blackCardChoose.text).length;
+    whiteCards = gameSession.playersDetailMap[user.username].whiteCardDeck;
 
-    GameSessionManager.onUpdate((session) async {
-      var user = await SessionData.getUser();
-      var oldPhase = gameSession.gamePhase;
+    blackCardChoose = gameSession.currentBlackCard;
+    _maxWhiteCardsSelected = '<*>'.allMatches(blackCardChoose.text).length;
+    whiteCards = gameSession.playersDetailMap[user.username].whiteCardDeck;
+    isChoiceBlackTurn = gameSession.gamePhase == GameSessionPhase.CHOICE_BLACK;
+    isBlackKing = clientUsername == gameSession.blackKing;
+    isHost = clientUsername == gameSession.host;
 
-      setState(() {
-        gameSession = session;
-        blackCardChoose = gameSession.currentBlackCard;
-        _maxWhiteCardsSelected = '<*>'.allMatches(blackCardChoose.text).length;
-        whiteCards = gameSession.playersDetailMap[user.username].whiteCardDeck;
-        isChoiceBlackTurn =
-            gameSession.gamePhase == GameSessionPhase.CHOICE_BLACK;
-        isBlackKing = clientUsername == gameSession.blackKing;
-        isHost = clientUsername == gameSession.host;
+    // if (oldPhase == GameSessionPhase.CHOICE_BLACK &&
+    //     gameSession.gamePhase == GameSessionPhase.START_TURN) {
+    //   _selectedWhiteCards =
+    //       gameSession.playersDetailMap[user.username].whiteCardsChoose;
+    // }
 
-        if (oldPhase == GameSessionPhase.CHOICE_BLACK &&
-            session.gamePhase == GameSessionPhase.START_TURN) {
-          _selectedWhiteCards =
-              gameSession.playersDetailMap[user.username].whiteCardsChoose;
-        } else if (oldPhase == GameSessionPhase.FINISH_GAME) {
-          goToFinishGamePage();
-        }
-      });
-    });
-
-    GameSessionManager.onDisconnect(() {
-      SessionData.setUser(null);
-
-      Navigator.pushReplacement(
-          context, MaterialPageRoute(builder: (ctx) => LoginPage()));
-    });
+    width = MediaQuery.of(context).size.width;
+    canICompile = _selectedWhiteCards.length == _maxWhiteCardsSelected;
   }
 
   @override
   Widget build(BuildContext context) {
-    width = MediaQuery.of(context).size.width;
-    canICompile = _selectedWhiteCards.length == _maxWhiteCardsSelected;
+    return FutureBuilder(
+        future: initGameVariables(),
+        builder: (BuildContext context, AsyncSnapshot snap) {
+          if (snap.connectionState != ConnectionState.done) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
 
-    if (clientUsername == null) {
-      return Scaffold();
-    }
+          if (clientUsername == null) {
+            return Scaffold();
+          }
 
-    Widget scaffoldToRender = Scaffold();
+          Widget scaffoldToRender = Scaffold();
 
-    if (isChoiceBlackTurn && isBlackKing) {
-      scaffoldToRender = showBlackCardChoice();
-    } else if (isChoiceBlackTurn) {
-      scaffoldToRender = showBlackCardChoice(sendResults: false);
-    } else if (isBlackKing) {
-      scaffoldToRender =
-          showWaitingAlert('Attendi che gli altri giocatori scelgano');
-    } else if (!isBlackKing) {
-      scaffoldToRender = showWhiteChoice();
-    }
+          if (isChoiceBlackTurn && isBlackKing) {
+            scaffoldToRender = showBlackCardChoice();
+          } else if (isChoiceBlackTurn) {
+            scaffoldToRender = showBlackCardChoice(sendResults: false);
+          } else if (isBlackKing) {
+            scaffoldToRender =
+                showWaitingAlert('Attendi che gli altri giocatori scelgano');
+          } else if (!isBlackKing) {
+            scaffoldToRender = showWhiteChoice();
+          }
 
-    return ScaffoldForSignedPlayers(
-        gameSession: gameSession,
-        clientUsername: clientUsername,
-        body: scaffoldToRender,
-        appBarLeading: RaisedButton(
-            textColor: Colors.white,
-            color: Colors.blue,
-            child:
-                Text(canICompile ? "Compila carta nera" : "Seleziona le carte"),
-            onPressed: canICompile
-                ? () {
-                    GameSessionManager.chooseWhiteCards(_selectedWhiteCards);
-                  }
-                : null));
+          return ScaffoldForSignedPlayers(
+              gameSession: gameSession,
+              clientUsername: clientUsername,
+              body: scaffoldToRender,
+              appBarLeading: RaisedButton(
+                  textColor: Colors.white,
+                  color: Colors.blue,
+                  child: Text(canICompile
+                      ? "Compila carta nera"
+                      : "Seleziona le carte"),
+                  onPressed: canICompile
+                      ? () {
+                          GameSessionManager.chooseWhiteCards(
+                              _selectedWhiteCards);
+                        }
+                      : null));
+        });
   }
 
   Widget showWhiteChoice() {
@@ -304,8 +294,7 @@ class GamePageState extends State<GamePage> {
   }
 
   void goToFinishGamePage() {
-    Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (ctx) => WinnerPage()));
+    Navigator.pushReplacementNamed(context, WinnerPage.route);
   }
 
   void finishGame() {

@@ -1,14 +1,16 @@
-import 'package:cah_common_values/enums/game_session_phase.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:projectcahfungame/card_helper.dart';
 import 'package:projectcahfungame/game_session_manager.dart';
-import 'package:projectcahfungame/pages/game_page.dart';
+import 'package:projectcahfungame/pages/signed_player_page.dart';
 import 'package:projectcahfungame/widgets/error_alert.dart';
 import 'package:projectcahfungame/widgets/footer.dart';
 
-import 'lobby_page.dart';
 
 class LoginPage extends StatefulWidget {
+  static const String route = '/';
+
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -26,9 +28,13 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-
-    GameSessionManager.onUpdate((session) {
-      if (session.gamePhase == GameSessionPhase.LOBBY ||
+    
+    StreamSubscription sub;
+    sub =  GameSessionManager.onSessionUpdate.listen((session) {
+      // GameSessionManager.onUpdate(null);
+      sub.cancel();
+      Navigator.pushReplacementNamed(context, SignedPlayerPage.route);
+      /*if (session.gamePhase == GameSessionPhase.LOBBY ||
           session.gamePhase == GameSessionPhase.FINISH_GAME) {
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (ctx) => LobbyPage()));
@@ -36,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
           session.gamePhase == GameSessionPhase.CHOICE_BLACK) {
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (ctx) => GamePage()));
-      }
+      } */
     });
   }
 
@@ -133,8 +139,8 @@ class _LoginPageState extends State<LoginPage> {
                                               .isConnectedToServer) {
                                             manageLogin();
                                           } else {
-                                            GameSessionManager.onConnection(
-                                                manageLogin);
+                                            GameSessionManager.onConnection.listen((_) =>
+                                                manageLogin());
                                           }
                                         });
                                       }

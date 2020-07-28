@@ -31,14 +31,13 @@ class KickPlayerActionButton extends StatelessWidget {
   final List<String> playerUsernames;
   final String clientUsername;
 
-  const KickPlayerActionButton(
-      {Key key,
-      @required this.buttonType,
-      @required this.context,
-      @required this.playerUsernames,
-      @required this.clientUsername, 
-      })
-      : super(key: key);
+  const KickPlayerActionButton({
+    Key key,
+    @required this.buttonType,
+    @required this.context,
+    @required this.playerUsernames,
+    @required this.clientUsername,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -144,9 +143,11 @@ class LogoutActionButton extends StatelessWidget {
           ),
           actions: <Widget>[
             FlatButton(
-              child: Text('SI'),
-              onPressed: exitFromSession,
-            ),
+                child: Text('SI'),
+                onPressed: () {
+                  GameSessionManager.logoutFromGame();
+                  Navigator.of(context).pushReplacementNamed(LoginPage.route);
+                }),
             FlatButton(
               child: Text('NO'),
               onPressed: () {
@@ -157,13 +158,6 @@ class LogoutActionButton extends StatelessWidget {
         );
       },
     );
-  }
-
-  void exitFromSession() {
-    GameSessionManager.logoutFromGame();
-    SessionData.setUser(null);
-    Navigator.pushReplacement(context,
-        MaterialPageRoute(builder: (BuildContext context) => LoginPage()));
   }
 }
 
@@ -235,13 +229,16 @@ class GameRulesActionButton extends StatelessWidget {
 class BotManagerActionButton extends StatelessWidget {
   final BuildContext context;
   final ActionButtonType buttonType;
-    final String sessionToken;
+  final String sessionToken;
   final TextStyle titleStyle =
       const TextStyle(fontWeight: FontWeight.bold, fontSize: 20, height: 2);
 
-  const BotManagerActionButton(
-      {Key key, @required this.context, @required this.buttonType, @required this.sessionToken,})
-      : super(key: key);
+  const BotManagerActionButton({
+    Key key,
+    @required this.context,
+    @required this.buttonType,
+    @required this.sessionToken,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -290,7 +287,8 @@ class BotManagerActionButton extends StatelessWidget {
                   onPressed: () async {
                     formState.currentState.save();
                     print('Devo aggiungere $botCount bot');
-                    GameSessionManager.addBot(this.sessionToken, botCount).then((value) => Navigator.pop(context));
+                    GameSessionManager.addBot(this.sessionToken, botCount)
+                        .then((value) => Navigator.pop(context));
                   },
                 ),
                 FlatButton(

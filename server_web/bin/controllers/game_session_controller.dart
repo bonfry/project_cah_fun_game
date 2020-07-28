@@ -6,9 +6,11 @@ import '../sever_data.dart';
 import 'card_controller.dart';
 import 'user_controller.dart';
 
-class GameSessionController {
-  //Method for serving requests
 
+///Controller for serving requests abaut the game
+class GameSessionController {
+
+  ///Checks players who have sent white cards
   static GameSession sendWhiteCards(Request request) {
     var userToken = request.params['user_token'];
     var whiteCardsIds = List<String>.from(request.params['white_card_indexes']);
@@ -26,6 +28,7 @@ class GameSessionController {
     return gameSession;
   }
 
+  ///Controls if all human players have sent white cards
   static bool checkIfAllRealPlayersSentWhiteCards(GameSession gameSession) {
     var realPlayers = gameSession.playersDetailsMap.entries
         .where((playerEntry) =>
@@ -43,6 +46,7 @@ class GameSessionController {
     return realPlayersWhoSentWhiteCardsCount == realPlayers.length;
   }
 
+  /// Controls if all players have sent white cards
   static bool _checkIfAllPlayersHaveSent(GameSession gameSession) {
     var onlinePlayersUsername = gameSession.playersDetailsMap.entries
         .where((playerEntry) => playerEntry.value.online);
@@ -56,6 +60,8 @@ class GameSessionController {
 
     return playersWhoSentWhiteCardCount == onlinePlayersUsername.length;
   }
+
+
 
   static void allowNextBotToSendWhiteCards(GameSession gameSession) {
     var nextBotUsername = gameSession.playersDetailsMap.entries

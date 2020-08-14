@@ -10,7 +10,6 @@ import 'package:projectcahfungame/widgets/game_card.dart';
 import 'package:projectcahfungame/widgets/leaderboard.dart';
 import 'package:projectcahfungame/widgets/white_card_deck.dart';
 
-import '../game_session_scaffold.dart';
 import '../session_data.dart';
 
 class GamePage extends StatefulWidget {
@@ -43,7 +42,6 @@ class GamePageState extends State<GamePage> {
   GamePageState(this.gameSession);
 
   Future initGameVariables() async {
-
     blackCardChoose = gameSession.currentBlackCard;
 
     var user = await SessionData.getUser();
@@ -97,22 +95,7 @@ class GamePageState extends State<GamePage> {
             scaffoldToRender = showWhiteChoice();
           }
 
-          return ScaffoldForSignedPlayers(
-              gameSession: gameSession,
-              clientUsername: clientUsername,
-              body: scaffoldToRender,
-              appBarLeading: RaisedButton(
-                  textColor: Colors.white,
-                  color: Colors.blue,
-                  child: Text(canICompile
-                      ? "Compila carta nera"
-                      : "Seleziona le carte"),
-                  onPressed: canICompile
-                      ? () {
-                          GameSessionManager.chooseWhiteCards(
-                              _selectedWhiteCards);
-                        }
-                      : null));
+          return Scaffold(body: scaffoldToRender);
         });
   }
 

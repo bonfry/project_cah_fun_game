@@ -21,6 +21,8 @@ class GameSessionManager {
   static GameSession currentGameSession;
   static WebSocket _socketChannel;
 
+  static StreamController<User> _onLoginStreamController = 
+  StreamController<User>.broadcast();
   static StreamController<GameSession> _onSessionUpdateStreamController =
       StreamController<GameSession>.broadcast();
   static StreamController<MessageEvent> _onSessionCloseStreamController =
@@ -45,6 +47,8 @@ class GameSessionManager {
     _setUpSocketListener();
     _setUpSocketDisconnection();
   }
+
+  static Stream<User> get onLogin => _onLoginStreamController.stream;
 
   static Stream<GameSession> get onSessionUpdate => _onSessionUpdateStreamController.stream;
 
@@ -84,8 +88,9 @@ class GameSessionManager {
           socketResponse.containsKey('username')) {
         String userToken = socketResponse['user_token'];
         String userName = socketResponse['username'];
-
-        SessionData.setUser(User.login(userName, userToken));
+        var user = User.login(userName, userToken);
+        SessionData.setUser(user);
+        _onLoginStreamController.add(user);
       } else if (socketResponse.containsKey('error')) {
         throw ServerError(socketResponse['error']);
       } else {
@@ -153,6 +158,7 @@ class GameSessionManager {
     _onConnectionRecoveredStreamController.close();
     _onSessionUpdateStreamController.close();
     _onSessionCloseStreamController.close();
+    _onLoginStreamController.close();
 
     _disposeController.add(null);
     _disposeController.close();

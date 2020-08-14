@@ -7,7 +7,6 @@ import 'package:projectcahfungame/pages/signed_player_page.dart';
 import 'package:projectcahfungame/widgets/error_alert.dart';
 import 'package:projectcahfungame/widgets/footer.dart';
 
-
 class LoginPage extends StatefulWidget {
   static const String route = '/';
 
@@ -28,21 +27,9 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    
-    StreamSubscription sub;
-    sub =  GameSessionManager.onSessionUpdate.listen((session) {
-      // GameSessionManager.onUpdate(null);
-      sub.cancel();
+
+    GameSessionManager.onLogin.listen((user) {
       Navigator.pushReplacementNamed(context, SignedPlayerPage.route);
-      /*if (session.gamePhase == GameSessionPhase.LOBBY ||
-          session.gamePhase == GameSessionPhase.FINISH_GAME) {
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (ctx) => LobbyPage()));
-      } else if (session.gamePhase == GameSessionPhase.START_TURN ||
-          session.gamePhase == GameSessionPhase.CHOICE_BLACK) {
-        Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (ctx) => GamePage()));
-      } */
     });
   }
 
@@ -139,8 +126,8 @@ class _LoginPageState extends State<LoginPage> {
                                               .isConnectedToServer) {
                                             manageLogin();
                                           } else {
-                                            GameSessionManager.onConnection.listen((_) =>
-                                                manageLogin());
+                                            GameSessionManager.onConnection
+                                                .listen((_) => manageLogin());
                                           }
                                         });
                                       }
